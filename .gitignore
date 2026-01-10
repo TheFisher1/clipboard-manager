@@ -1,0 +1,39 @@
+# Uploaded files
+uploads/*
+!uploads/.gitkeep
+
+# Configuration files with sensitive data
+config/local_config.php
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Composer
+vendor/
+composer.lock
+
+# Node modules (if using any frontend build tools)
+node_modules/
+npm-debug.log
+
+# Environment files
+.env
+.env.local
+
+.vscode/
+.kiro/

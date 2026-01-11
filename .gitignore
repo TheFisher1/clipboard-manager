@@ -35,7 +35,5 @@ npm-debug.log
 .env
 .env.local
 
-.vscode/
-.kiro/
-
-!.kiro/**/tasks.md
+.kiro/specs/*/*
+!.kiro/specs/*/tasks.md

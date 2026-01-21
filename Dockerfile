@@ -25,11 +25,10 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html/
 
-RUN mkdir -p /var/www/html/uploads && \
+RUN mkdir -p /var/www/html/uploads /var/www/html/public && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
-    chmod -R 777 /var/www/html/uploads
-
-COPY docker/apache-config.conf /etc/apache2/sites-available/000-default.conf
+    chmod -R 777 /var/www/html/uploads && \
+    chmod -R 755 /var/www/html/public
 
 EXPOSE 80

@@ -17,9 +17,6 @@ services:
       - DB_NAME=clipboard_system
       - DB_USER=root
       - DB_PASS=rootpassword
-      - MAILTRAP_API_KEY=a334202cd87226d289dc1acdee120898
-      - SMTP_FROM_EMAIL=noreply@clipboard-system.local
-      - SMTP_FROM_NAME=ClipboardSystem
     networks:
       - clipboard-network
 

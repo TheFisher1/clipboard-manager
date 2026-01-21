@@ -1,67 +1,45 @@
 <?php
-
-ob_start();
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-require_once 'config/config.php';
-require_once 'src/Services/SessionManager.php';
-require_once 'src/Middleware/AuthMiddleware.php';
-require_once 'src/Controllers/AuthController.php';
-
-SessionManager::initializeSession();
-
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$method = $_SERVER['REQUEST_METHOD'];
 
-$authController = new AuthController();
-
-switch ($path) {
-    case '/':
-        if ($method === 'GET') {
-            include 'pages/home.php';
-        }
-        break;
-        
-    case '/login':
-        $authController->login();
-        break;
-        
-    case '/register':
-        $authController->register();
-        break;
-        
-    case '/verify-email':
-        if ($method === 'GET') {
-            $authController->verifyEmail();
-        }
-        break;
-        
-    case '/forgot-password':
-        $authController->forgotPassword();
-        break;
-        
-    case '/reset-password':
-        if ($method === 'GET' || $method === 'POST') {
-            $authController->resetPassword();
-        }
-        break;
-        
-    case '/logout':
-        if ($method === 'GET') {
-            $authController->logout();
-        }
-        break;
-        
-    case '/dashboard':
-        AuthMiddleware::apply(function() {
-            include 'pages/dashboard.php';
-        });
-        break;
-        
-    default:
-        http_response_code(404);
-        echo "Page not found";
-        break;
+if (strpos($path, '/api') === 0) {
+    require_once 'api/index.php';
+    exit;
 }
+
+$publicPath = __DIR__ . '/public';
+
+if ($path === '/') {
+    $path = '/index.html';
+}
+
+$filePath = $publicPath . $path;
+
+$realPath = realpath($filePath);
+if ($realPath === false || strpos($realPath, $publicPath) !== 0) {
+    http_response_code(404);
+    echo "Not found";
+    exit;
+}
+
+if (file_exists($filePath) && is_file($filePath)) {
+    $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+    $mimeTypes = [
+        'html' => 'text/html',
+        'css' => 'text/css',
+        'js' => 'application/javascript',
+        'json' => 'application/json',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'svg' => 'image/svg+xml'
+    ];
+    
+    $mimeType = $mimeTypes[$ext] ?? 'application/octet-stream';
+    header('Content-Type: ' . $mimeType);
+    readfile($filePath);
+    exit;
+}
+
+http_response_code(404);
+echo "Not found";

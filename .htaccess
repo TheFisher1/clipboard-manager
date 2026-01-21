@@ -1,4 +1,13 @@
 RewriteEngine On
+
+RewriteRule ^api/(.*)$ api/index.php [L,QSA]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
+RewriteRule ^(.*)$ index.php [L,QSA]
+
+RewriteRule ^config/ - [F,L]
+RewriteRule ^docker/ - [F,L]
+RewriteRule ^src/ - [F,L]
+
+Options -Indexes

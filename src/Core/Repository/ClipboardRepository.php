@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/Clipboard.php';
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../Model/Clipboard.php';
 
 class ClipboardRepository
 {

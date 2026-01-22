@@ -21,6 +21,8 @@ $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $path = str_replace('/api', '', $path);
 $method = $_SERVER['REQUEST_METHOD'];
 
+// AUTH ROUTES
+
 if (preg_match('#^/auth/(login|register|logout|me)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/AuthController.php';
     $controller = new ApiAuthController();
@@ -34,6 +36,8 @@ if (!SessionManager::isAuthenticated()) {
     echo json_encode(['error' => 'Authentication required']);
     exit;
 }
+
+// SUBSCRIPTION ROUTES
 
 if (preg_match('#^/subscriptions/user/(\d+)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
@@ -80,6 +84,52 @@ if (preg_match('#^/subscriptions/clipboard/(\d+)/user/(\d+)$#', $path, $matches)
     $controller->handleRequest($method, $clipboardId, $userId);
     exit;
 }
+
+// CLIPBOARD ACTIVITY ROUTES
+
+if ($path === '/actions' && $method === 'POST') {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
+    $controller = new ClipboardActivityController();
+    $controller->handleRequest($method, null, null);
+    exit;
+}
+
+if ($path === '/actions' && $method === 'GET') {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
+    $controller = new ClipboardActivityController();
+    $controller->handleRequest($method, null, null);
+    exit;
+}
+
+if (preg_match('#^/actions/user/(\d+)$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
+    $controller = new ClipboardActivityController();
+    $controller->handleRequest($method, 'user', $matches[1]);
+    exit;
+}
+
+if (preg_match('#^/actions/clipboard/(\d+)$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
+    $controller = new ClipboardActivityController();
+    $controller->handleRequest($method, 'clipboard', $matches[1]);
+    exit;
+}
+
+if (preg_match('#^/actions/item/(\d+)$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
+    $controller = new ClipboardActivityController();
+    $controller->handleRequest($method, 'item', $matches[1]);
+    exit;
+}
+
+if (preg_match('#^/actions/(\d+)$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
+    $controller = new ClipboardActivityController();
+    $controller->handleRequest($method, 'id', $matches[1]);
+    exit;
+}
+
+// CLIPBOARD && CLIPBOARD ITEM ROUTES
 
 if (preg_match('#^/clipboards(/(\d+))?(/items)?(/(\d+))?$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';

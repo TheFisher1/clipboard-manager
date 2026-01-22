@@ -35,6 +35,52 @@ if (!SessionManager::isAuthenticated()) {
     exit;
 }
 
+if (preg_match('#^/subscriptions/user/(\d+)$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
+    $controller = new ClipboardSubscriptionController();
+
+    $userId = $matches[1];
+    $controller->handleRequest($method, null, $userId);
+    exit;
+}
+
+if (preg_match('#^/subscriptions/clipboard/(\d+)/user/(\d+)$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
+    $controller = new ClipboardSubscriptionController();
+
+    $clipboardId = $matches[1];
+    $userId = $matches[2];
+    $controller->handleRequest($method, $clipboardId, $userId);
+    exit;
+}
+
+if ($path === '/subscriptions' && $method === 'POST') {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
+    $controller = new ClipboardSubscriptionController();
+    $controller->handleRequest($method, null, null);
+    exit;
+}
+
+if (preg_match('#^/subscriptions/clipboard/(\d+)/user/(\d+)$#', $path, $matches) && $method === 'PUT') {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
+    $controller = new ClipboardSubscriptionController();
+
+    $clipboardId = $matches[1];
+    $userId = $matches[2];
+    $controller->handleRequest($method, $clipboardId, $userId);
+    exit;
+}
+
+if (preg_match('#^/subscriptions/clipboard/(\d+)/user/(\d+)$#', $path, $matches) && $method === 'DELETE') {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
+    $controller = new ClipboardSubscriptionController();
+
+    $clipboardId = $matches[1];
+    $userId = $matches[2];
+    $controller->handleRequest($method, $clipboardId, $userId);
+    exit;
+}
+
 if (preg_match('#^/clipboards(/(\d+))?(/items)?(/(\d+))?$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
     $controller = new ClipboardController();

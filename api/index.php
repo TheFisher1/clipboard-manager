@@ -129,6 +129,24 @@ if (preg_match('#^/actions/(\d+)$#', $path, $matches)) {
     exit;
 }
 
+// CLIPBOARD GROUPS
+
+if (preg_match('#^/groups(?:/(\d+))?(?:/clipboards(?:/(\d+))?)?$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardGroupController.php';
+    $controller = new ClipboardGroupController();
+
+    $groupId = $matches[1] ?? null;
+    $clipboardId = $matches[2] ?? null;
+    $isClipboards = strpos($path, '/clipboards') !== false;
+
+    if ($isClipboards) {
+        $controller->handleRequest($method, $groupId, 'clipboards', $clipboardId);
+    } else {
+        $controller->handleRequest($method, $groupId);
+    }
+    exit;
+}
+
 // CLIPBOARD && CLIPBOARD ITEM ROUTES
 
 if (preg_match('#^/clipboards(/(\d+))?(/items)?(/(\d+))?$#', $path, $matches)) {

@@ -131,4 +131,15 @@ class ClipboardRepository
 
         return array_map(fn($row) => Clipboard::fromDatabase($row), $rows);
     }
+    public function findPublicOrOwned(int $userId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT * FROM clipboards 
+            WHERE is_public = 1 OR owner_id = :userId
+        ");
+        
+        $stmt->execute(['userId' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Clipboard::class);
+    }
+
 }

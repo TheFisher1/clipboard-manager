@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../../Core/Repository/ClipboardRepository.php';
 require_once __DIR__ . '/../../Core/Model/Clipboard.php';
+require_once __DIR__ . '/../../Services/SessionManager.php';
 
 class ClipboardController
 {
@@ -12,12 +13,16 @@ class ClipboardController
         $this->repository = new ClipboardRepository();
     }
 
-    public function handleRequest(string $method, ?string $id): void
+    public function handleRequest(string $method, ?string $id, ?string $subroute = null): void
     {
         try {
             switch ($method) {
                 case 'GET':
-                    $id ? $this->getOne((int)$id) : $this->getAll();
+                    if ($subroute === 'mine') {
+                        $this->getMine();
+                    } else {
+                        $id ? $this->getOne((int)$id) : $this->getAll();
+                    }
                     break;
                 case 'POST':
                     $this->create();
@@ -38,17 +43,33 @@ class ClipboardController
 
     private function getAll(): void
     {
-        $clipboards = $this->repository->findAll();
+        $userId = SessionManager::getCurrentUserId();
+        $clipboards = $this->repository->findPublicOrOwned($userId);
         $this->sendResponse(array_map(fn($c) => $this->toArray($c), $clipboards));
     }
 
+    private function getMine(): void
+    {
+        $userId = SessionManager::getCurrentUserId();
+        $clipboards = $this->repository->findByOwnerId($userId);
+        $this->sendResponse(array_map(fn($c) => $this->toArray($c), $clipboards));
+    }
+
+
     private function getOne(int $id): void
     {
+        $userId = SessionManager::getCurrentUserId();
         $clipboard = $this->repository->findById($id);
         if (!$clipboard) {
             $this->sendError('Clipboard not found', 404);
             return;
         }
+
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('Forbidden', 403);
+            return;
+        }
+
         $this->sendResponse($this->toArray($clipboard));
     }
 
@@ -81,9 +102,16 @@ class ClipboardController
 
     private function update(int $id): void
     {
+        $userId = SessionManager::getCurrentUserId();
+
         $clipboard = $this->repository->findById($id);
         if (!$clipboard) {
             $this->sendError('Clipboard not found', 404);
+            return;
+        }
+
+        if ($clipboard->getOwnerId() !== $userId) {
+            $this->sendError('Forbidden', 403);
             return;
         }
 
@@ -103,9 +131,15 @@ class ClipboardController
 
     private function delete(int $id): void
     {
+        $userId = SessionManager::getCurrentUserId();
         $clipboard = $this->repository->findById($id);
         if (!$clipboard) {
             $this->sendError('Clipboard not found', 404);
+            return;
+        }
+
+        if ($clipboard->getOwnerId() !== $userId) {
+            $this->sendError('Forbidden', 403);
             return;
         }
 

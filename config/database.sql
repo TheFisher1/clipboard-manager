@@ -17,11 +17,26 @@ CREATE TABLE clipboard_groups (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     description TEXT,
-    parent_group_id INT NULL,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (parent_group_id) REFERENCES clipboard_groups(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table that links groups and clipboards
+CREATE TABLE clipboard_group_map (
+    clipboard_id INT NOT NULL,
+    group_id INT NOT NULL,
+    PRIMARY KEY (clipboard_id, group_id),
+
+    CONSTRAINT fk_map_clipboard
+        FOREIGN KEY (clipboard_id)
+        REFERENCES clipboards(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_map_group
+        FOREIGN KEY (group_id)
+        REFERENCES clipboard_groups(id)
+        ON DELETE CASCADE
 );
 
 -- Clipboards configuration

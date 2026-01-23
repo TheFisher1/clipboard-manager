@@ -149,6 +149,14 @@ if (preg_match('#^/groups(?:/(\d+))?(?:/clipboards(?:/(\d+))?)?$#', $path, $matc
 
 // CLIPBOARD && CLIPBOARD ITEM ROUTES
 
+// GET /api/clipboards/mine
+if (preg_match('#^/clipboards/mine$#', $path)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
+    $controller = new ClipboardController();
+    $controller->handleRequest($method, null, 'mine');
+    exit;
+}
+
 if (preg_match('#^/clipboards(/(\d+))?(/items)?(/(\d+))?$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
     $controller = new ClipboardController();

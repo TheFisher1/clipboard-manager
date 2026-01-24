@@ -142,4 +142,16 @@ class ClipboardRepository
         return $stmt->fetchAll(PDO::FETCH_CLASS, Clipboard::class);
     }
 
+    public function deleteExpired(): int
+    {
+        $stmt = $this->db->prepare("
+            DELETE FROM clipboards
+            WHERE default_expiration_minutes IS NOT NULL
+            AND DATE_ADD(created_at, INTERVAL default_expiration_minutes MINUTE) <= NOW()
+        ");
+
+        $stmt->execute();
+        return $stmt->rowCount();
+    }
+
 }

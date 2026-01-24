@@ -6,23 +6,18 @@ class Clipboard
     private string $name;
     private ?string $description;
     private int $ownerId;
-    private ?int $groupId;
     private bool $isPublic;
     private ?int $maxSubscribers;
     private ?int $maxItems;
-    private ?array $allowedContentTypes; // decoded JSON
+    private ?array $allowedContentTypes;
     private ?int $defaultExpirationMinutes;
     private ?string $createdAt;
     private ?string $updatedAt;
 
-    /**
-     * Constructor
-     */
     public function __construct(
         string $name,
         int $ownerId,
         ?string $description = null,
-        ?int $groupId = null,
         bool $isPublic = false,
         ?int $maxSubscribers = null,
         ?int $maxItems = null,
@@ -33,7 +28,6 @@ class Clipboard
         $this->name = $name;
         $this->ownerId = $ownerId;
         $this->description = $description;
-        $this->groupId = $groupId;
         $this->isPublic = $isPublic;
         $this->maxSubscribers = $maxSubscribers;
         $this->maxItems = $maxItems;
@@ -43,9 +37,6 @@ class Clipboard
         $this->updatedAt = null;
     }
 
-    /* =======================
-       Getters
-       ======================= */
 
     public function getId(): ?int
     {
@@ -67,10 +58,6 @@ class Clipboard
         return $this->ownerId;
     }
 
-    public function getGroupId(): ?int
-    {
-        return $this->groupId;
-    }
 
     public function isPublic(): bool
     {
@@ -107,10 +94,6 @@ class Clipboard
         return $this->updatedAt;
     }
 
-    /* =======================
-       Setters
-       ======================= */
-
     public function setName(string $name): void
     {
         $this->name = $name;
@@ -121,10 +104,6 @@ class Clipboard
         $this->description = $description;
     }
 
-    public function setGroupId(?int $groupId): void
-    {
-        $this->groupId = $groupId;
-    }
 
     public function setPublic(bool $isPublic): void
     {
@@ -151,20 +130,12 @@ class Clipboard
         $this->defaultExpirationMinutes = $minutes;
     }
 
-    /* =======================
-       Helpers
-       ======================= */
-
-    /**
-     * Used when loading from database
-     */
     public static function fromDatabase(array $row): self
     {
         $clipboard = new self(
             $row['name'],
             (int)$row['owner_id'],
             $row['description'] ?? null,
-            $row['group_id'] ?? null,
             (bool)$row['is_public'],
             $row['max_subscribers'] ?? null,
             $row['max_items'] ?? null,
@@ -181,16 +152,12 @@ class Clipboard
         return $clipboard;
     }
 
-    /**
-     * Convert object to array (for DB insert/update)
-     */
     public function toDatabaseArray(): array
     {
         return [
             'name' => $this->name,
             'description' => $this->description,
             'owner_id' => $this->ownerId,
-            'group_id' => $this->groupId,
             'is_public' => $this->isPublic,
             'max_subscribers' => $this->maxSubscribers,
             'max_items' => $this->maxItems,

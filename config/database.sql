@@ -45,7 +45,6 @@ CREATE TABLE clipboards (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     owner_id INT NOT NULL,
-    group_id INT NULL,
     is_public BOOLEAN DEFAULT FALSE,
     max_subscribers INT DEFAULT NULL, -- NULL = unlimited, 1 = single subscriber
     max_items INT DEFAULT NULL, -- NULL = unlimited, 1 = single item

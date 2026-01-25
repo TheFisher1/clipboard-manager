@@ -22,6 +22,22 @@ CREATE TABLE clipboard_groups (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Clipboards configuration
+CREATE TABLE clipboards (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    owner_id INT NOT NULL,
+    is_public BOOLEAN DEFAULT FALSE,
+    max_subscribers INT DEFAULT NULL, -- NULL = unlimited, 1 = single subscriber
+    max_items INT DEFAULT NULL, -- NULL = unlimited, 1 = single item
+    allowed_content_types JSON, -- Array of MIME types
+    default_expiration_minutes INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Table that links groups and clipboards
 CREATE TABLE clipboard_group_map (
     clipboard_id INT NOT NULL,
@@ -37,22 +53,6 @@ CREATE TABLE clipboard_group_map (
         FOREIGN KEY (group_id)
         REFERENCES clipboard_groups(id)
         ON DELETE CASCADE
-);
-
--- Clipboards configuration
-CREATE TABLE clipboards (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    owner_id INT NOT NULL,
-    is_public BOOLEAN DEFAULT FALSE,
-    max_subscribers INT DEFAULT NULL, -- NULL = unlimited, 1 = single subscriber
-    max_items INT DEFAULT NULL, -- NULL = unlimited, 1 = single item
-    allowed_content_types JSON, -- Array of MIME types
-    default_expiration_minutes INT DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Clipboard subscriptions

@@ -1,32 +1,35 @@
 <?php
 
 require_once __DIR__ . '/../../Core/Repository/ClipboardItemRepository.php';
+require_once __DIR__ . '/../../Core/Repository/ClipboardRepository.php';
 require_once __DIR__ . '/../../Core/Model/ClipboardItem.php';
 
 class ClipboardItemController
 {
     private ClipboardItemRepository $repository;
+    private ClipboardRepository $clipboardRepository;
 
     public function __construct()
     {
         $this->repository = new ClipboardItemRepository();
+        $this->clipboardRepository = new ClipboardRepository();
     }
 
-    public function handleRequest(string $method, ?string $clipboardId, ?string $itemId): void
+    public function handleRequest(string $method, ?string $clipboardId, ?string $itemId, int $userId): void
     {
         try {
             switch ($method) {
                 case 'GET':
-                    $itemId ? $this->getOne((int)$itemId) : $this->getByClipboard((int)$clipboardId);
+                    $itemId ? $this->getOne((int)$itemId, $userId) : $this->getByClipboard((int)$clipboardId, $userId);
                     break;
                 case 'POST':
-                    $this->create((int)$clipboardId);
+                    $this->create((int)$clipboardId, $userId);
                     break;
                 case 'PUT':
-                    $this->update((int)$itemId);
+                    $this->update((int)$itemId, $userId);
                     break;
                 case 'DELETE':
-                    $this->delete((int)$itemId);
+                    $this->delete((int)$itemId, $userId);
                     break;
                 default:
                     $this->sendError('Method not allowed', 405);
@@ -36,35 +39,54 @@ class ClipboardItemController
         }
     }
 
-    private function getByClipboard(int $clipboardId): void
+    private function getByClipboard(int $clipboardId, int $userId): void
     {
+        $clipboard = $this->clipboardRepository->findById($clipboardId);
+
+        if (!$clipboard) {
+            $this->sendError('Clipboard not found', 404);
+            return;
+        }
+
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannot access items of clipboard thats not yours', 403);
+            return;
+        }
+
         $items = $this->repository->findByClipboardId($clipboardId);
         $this->sendResponse(array_map(fn($i) => $this->toArray($i), $items));
     }
 
-    private function getOne(int $id): void
+    private function getOne(int $id, int $userId): void
     {
         $item = $this->repository->findById($id);
         if (!$item) {
             $this->sendError('Item not found', 404);
             return;
         }
+
+        $clipboard = $this->clipboardRepository->findById($item->getClipboardId());
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannot access items of clipboard thats not yours', 403);
+            return;
+        }
+
         $this->sendResponse($this->toArray($item));
     }
 
-    private function create(int $clipboardId): void
+    private function create(int $clipboardId, int $userId): void
     {
         $data = json_decode(file_get_contents('php://input'), true);
         
-        if (!isset($data['content_type']) || !isset($data['submitted_by'])) {
-            $this->sendError('Missing required fields: content_type, submitted_by', 400);
+        if (!isset($data['content_type'])) {
+            $this->sendError('Missing required fields: content_type', 400);
             return;
         }
 
         $item = new ClipboardItem(
             $clipboardId,
             $data['content_type'],
-            (int)$data['submitted_by'],
+            $userId,
             $data['content_text'] ?? null,
             $data['file_path'] ?? null,
             $data['original_filename'] ?? null,
@@ -82,11 +104,16 @@ class ClipboardItemController
         $this->sendResponse($this->toArray($created), 201);
     }
 
-    private function update(int $id): void
+    private function update(int $id, int $userId): void
     {
         $item = $this->repository->findById($id);
         if (!$item) {
             $this->sendError('Item not found', 404);
+            return;
+        }
+
+        if ($item->getSubmittedBy() !== $userId) {
+            $this->sendError('You cannot update items that are not yours', 403);
             return;
         }
 
@@ -103,11 +130,16 @@ class ClipboardItemController
         $this->sendResponse($this->toArray($updated));
     }
 
-    private function delete(int $id): void
+    private function delete(int $id, int $userId): void
     {
         $item = $this->repository->findById($id);
         if (!$item) {
             $this->sendError('Item not found', 404);
+            return;
+        }
+
+        if ($item->getSubmittedBy() !== $userId) {
+            $this->sendError('You cannot delete items that are not yours', 403);
             return;
         }
 

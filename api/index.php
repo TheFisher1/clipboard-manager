@@ -37,99 +37,64 @@ if (!SessionManager::isAuthenticated()) {
     exit;
 }
 
+$userId = SessionManager::getCurrentUserId();
+
 // SUBSCRIPTION ROUTES
 
-if (preg_match('#^/subscriptions/user/(\d+)$#', $path, $matches)) {
+if ($path === '/subscriptions') {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
     $controller = new ClipboardSubscriptionController();
-
-    $userId = $matches[1];
     $controller->handleRequest($method, null, $userId);
     exit;
 }
 
-if (preg_match('#^/subscriptions/clipboard/(\d+)/user/(\d+)$#', $path, $matches)) {
+if (preg_match('#^/subscriptions/(\d+)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
     $controller = new ClipboardSubscriptionController();
 
     $clipboardId = $matches[1];
-    $userId = $matches[2];
-    $controller->handleRequest($method, $clipboardId, $userId);
-    exit;
-}
-
-if ($path === '/subscriptions' && $method === 'POST') {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
-    $controller = new ClipboardSubscriptionController();
-    $controller->handleRequest($method, null, null);
-    exit;
-}
-
-if (preg_match('#^/subscriptions/clipboard/(\d+)/user/(\d+)$#', $path, $matches) && $method === 'PUT') {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
-    $controller = new ClipboardSubscriptionController();
-
-    $clipboardId = $matches[1];
-    $userId = $matches[2];
-    $controller->handleRequest($method, $clipboardId, $userId);
-    exit;
-}
-
-if (preg_match('#^/subscriptions/clipboard/(\d+)/user/(\d+)$#', $path, $matches) && $method === 'DELETE') {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardSubscriptionController.php';
-    $controller = new ClipboardSubscriptionController();
-
-    $clipboardId = $matches[1];
-    $userId = $matches[2];
     $controller->handleRequest($method, $clipboardId, $userId);
     exit;
 }
 
 // CLIPBOARD ACTIVITY ROUTES
 
-if ($path === '/actions' && $method === 'POST') {
+if ($path === '/actions') {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
     $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, null, null);
+    $controller->handleRequest($method, null, null, $userId);
     exit;
 }
 
-if ($path === '/actions' && $method === 'GET') {
+if ($path === '/actions/user') {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
     $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, null, null);
-    exit;
-}
-
-if (preg_match('#^/actions/user/(\d+)$#', $path, $matches)) {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
-    $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'user', $matches[1]);
+    $controller->handleRequest($method, 'user', null, $userId);
     exit;
 }
 
 if (preg_match('#^/actions/clipboard/(\d+)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
     $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'clipboard', $matches[1]);
+    $controller->handleRequest($method, 'clipboard', $matches[1], $userId);
     exit;
 }
 
 if (preg_match('#^/actions/item/(\d+)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
     $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'item', $matches[1]);
+    $controller->handleRequest($method, 'item', $matches[1], $userId);
     exit;
 }
 
 if (preg_match('#^/actions/(\d+)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
     $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'id', $matches[1]);
+    $controller->handleRequest($method, 'id', $matches[1], $userId);
     exit;
 }
 
-// CLIPBOARD GROUPS
+// CLIPBOARD GROUP ROUTES
 
 if (preg_match('#^/groups(?:/(\d+))?(?:/clipboards(?:/(\d+))?)?$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardGroupController.php';
@@ -153,7 +118,7 @@ if (preg_match('#^/groups(?:/(\d+))?(?:/clipboards(?:/(\d+))?)?$#', $path, $matc
 if (preg_match('#^/clipboards/mine$#', $path)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
     $controller = new ClipboardController();
-    $controller->handleRequest($method, null, 'mine');
+    $controller->handleRequest($method, null, $userId, 'mine');
     exit;
 }
 
@@ -170,7 +135,7 @@ if (preg_match('#^/clipboards(/(\d+))?(/items)?(/(\d+))?$#', $path, $matches)) {
         $itemController = new ClipboardItemController();
         $itemController->handleRequest($method, $clipboardId, $itemId);
     } else {
-        $controller->handleRequest($method, $clipboardId);
+        $controller->handleRequest($method, $clipboardId, $userId);
     }
 } else {
     http_response_code(404);

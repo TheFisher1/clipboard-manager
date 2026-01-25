@@ -34,7 +34,6 @@ class ClipboardActivity
         $this->created_at = $created_at ?? date('Y-m-d H:i:s');
     }
 
-    // Getters
     public function getId(): ?int
     {
         return $this->id;
@@ -80,7 +79,6 @@ class ClipboardActivity
         return $this->created_at;
     }
 
-    // Setters
     public function setId(int $id): void
     {
         $this->id = $id;
@@ -126,7 +124,6 @@ class ClipboardActivity
         $this->created_at = $created_at;
     }
 
-    // Convert to array (for JSON output)
     public function toArray(): array
     {
         return [

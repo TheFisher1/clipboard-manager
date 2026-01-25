@@ -134,7 +134,9 @@ class ClipboardRepository
         ");
         
         $stmt->execute(['userId' => $userId]);
-        return $stmt->fetchAll(PDO::FETCH_CLASS, Clipboard::class);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(fn($row) => Clipboard::fromDatabase($row), $rows);
     }
 
     public function deleteExpired(): int

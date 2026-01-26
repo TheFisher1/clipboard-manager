@@ -95,10 +95,15 @@
     border-radius: 8px;
     max-width: 60%;
     position: relative;
-    overflow: hidden;
     max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
+}
+
+.modal-content.stepper {
+    overflow-y: hidden;
 }
 
 .modal-content:not(.stepper) {

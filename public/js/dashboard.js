@@ -17,9 +17,17 @@ let currentClipboardId = null;
 // Modal management
 const createModal = document.getElementById('createModal');
 const detailsModal = document.getElementById('detailsModal');
+const collapsibleContent = document.getElementById('collapsibleContent');
+const collapsibleButton = document.getElementById('collapsibleButton');
 const createBtn = document.getElementById('createClipboardBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const closeBtns = document.querySelectorAll('.close');
+
+collapsibleButton.addEventListener('click', (e) => {
+    const collapsed = e.currentTarget.classList.toggle('collapsed');
+    e.currentTarget.textContent = collapsed ? 'Hide details' : 'Show details';
+    collapsibleContent.style.display = collapsed ? 'block' : 'none';
+});
 
 createBtn.addEventListener('click', () => {
     createModal.style.display = 'block';
@@ -33,12 +41,19 @@ closeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         createModal.style.display = 'none';
         detailsModal.style.display = 'none';
+        resetCollapsible();
     });
 });
 
 window.addEventListener('click', (e) => {
-    if (e.target === createModal) createModal.style.display = 'none';
-    if (e.target === detailsModal) detailsModal.style.display = 'none';
+    if (e.target === createModal) {
+        createModal.style.display = 'none';
+    }
+
+    if (e.target === detailsModal) {
+        detailsModal.style.display = 'none';
+        resetCollapsible();
+    }
 });
 
 // Load clipboards
@@ -110,11 +125,31 @@ async function showClipboardDetails(id) {
         document.getElementById('clipboardName').textContent = clipboard.name;
         document.getElementById('clipboardDescription').textContent = 
             clipboard.description || 'No description';
+        createCollapsible(clipboard);
         
         await loadItems(id);
     } catch (error) {
         alert('Failed to load clipboard: ' + error.message);
     }
+}
+
+function createCollapsible(clipboard) {
+    collapsibleContent.textContent = 
+        `Created by: ${clipboard['owner_id']} (TODO: change to username)\n` +
+        `Allowed content: ${clipboard['allowed_content_types']}\n` +
+        `Created: ${clipboard['created_at']}\n` +
+        `Expires: ${clipboard['default_expiration_minutes']}\n` +
+        `Max items: ${clipboard['max_items']}\n` +
+        `Max subscribers: ${clipboard['max_subscribers']}\n`;
+}
+
+function resetCollapsible() {
+    const btn = document.getElementById('collapsibleButton');
+    const content = document.getElementById('collapsibleContent');
+
+    btn.classList.remove('collapsed');
+    btn.textContent = 'Show details';
+    content.style.display = 'none';
 }
 
 // Load items

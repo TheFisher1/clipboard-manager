@@ -11,7 +11,7 @@
         navAuth.innerHTML = `
             <span class="user-name">Welcome, ${escapeHtml(user.name)}</span>
             <a href="dashboard.html" class="btn btn-sm btn-primary">Dashboard</a>
-            <button id="navLogoutBtn" class="btn btn-sm btn-secondary">Logout</button>
+            <a id="navLogoutBtn" class="btn btn-sm btn-secondary">Logout</a>
         `;
         
         document.getElementById('navLogoutBtn')?.addEventListener('click', async () => {

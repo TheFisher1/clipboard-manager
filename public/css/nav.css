@@ -1,0 +1,71 @@
+
+nav {
+    display: grid;
+    grid-template-columns: 35% auto auto auto;
+    align-content: center;
+}
+
+nav a {
+    color: var(--btn-primary-color);
+    text-decoration: none;
+    padding: 2em 4em;
+    transition: background 0.3s;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+nav a.btn.active {
+    corner-top-left-shape: bevel;
+    corner-bottom-right-shape: bevel;
+}
+
+header {
+    background-color: var(--main-bg-color);
+    padding: 20px;
+    border-bottom: 1px solid var(--btn-primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin-top: 0.2em;
+    font-size: 3.8rem;
+    color: var(--btn-primary-color);
+}
+
+/* Side-bar buttons */
+.nav-auth-buttons {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    gap: 2em;
+}
+
+/* Nav-bar main buttons underline */
+.hover-underline-animation {
+    display: inline-block;
+    position: relative;
+}
+
+.hover-underline-animation::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--btn-primary-color);
+    transform-origin: center;
+    transition: transform 0.25s ease-out;
+}
+
+.hover-underline-animation:not(.active):hover::after {
+    transform: scaleX(1);
+    transform-origin: center;
+}
+
+.hover-underline-animation.active::after {
+    transform: scaleX(1);
+    transition: none;
+}

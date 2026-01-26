@@ -96,10 +96,12 @@
     max-width: 60%;
     position: relative;
     overflow: hidden;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-content:not(.stepper) {
-    /* padding: 30px; */
     padding: 1.8rem;
 }
 
@@ -115,12 +117,15 @@
     display: flex;
     width: 200%;
     transition: transform 0.35s ease;
+    height: 100%;
 }
 
 .step {
     width: 50%;
     padding: 1.8rem;
-    overflow: hidden;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .stepper-track.step-2 {

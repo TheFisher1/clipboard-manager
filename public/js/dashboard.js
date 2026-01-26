@@ -116,11 +116,16 @@ createClipboardForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const formData = new FormData(e.target);
+    const allowed_types = formData.getAll('allowed_types');
     const data = {
         name: formData.get('name'),
         description: formData.get('description'),
         is_public: formData.get('is_public') === 'on',
-        owner_id: currentUser.id
+        owner_id: currentUser.id,
+        max_subscribers: formData.get('max-subscribers'),
+        max_items: formData.get('max-items'),
+        default_expiration_minutes: getExpirationMinutes(formData.get('expiration')),
+        allowed_content_types: allowed_types.length === 0 ? null : allowed_types 
     };
 
     try {
@@ -154,14 +159,15 @@ async function showClipboardDetails(id) {
 
 function createCollapsible(clipboard) {
     const allowedContentString = clipboard['allowed_content_types']?.join(', ') ?? null;
+    const expiration = clipboard['default_expiration_minutes'] ?? null;
 
     collapsibleContent.textContent = 
         `Created by: ${clipboard['owner_id']} (TODO: change to username)\n` +
-        `Allowed content: ${allowedContentString}\n` +
+        `Allowed content: ${allowedContentString === null ? 'All content types' : allowedContentString}\n` +
         `Created: ${clipboard['created_at']}\n` +
-        `Expires: ${clipboard['default_expiration_minutes']}\n` +
-        `Max items: ${clipboard['max_items']}\n` +
-        `Max subscribers: ${clipboard['max_subscribers']}\n`;
+        `Expires: ${expiration === null ? 'Never' : expiration}\n` +
+        `Max subscribers: ${clipboard['max_subscribers']}\n` +
+        `Max items: ${clipboard['max_items']}\n`;
 }
 
 function resetCollapsible() {
@@ -288,6 +294,37 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString();
 }
+
+// Hardcoded zashtoto me myrzi sorry
+function getExpirationMinutes(expiration) {
+    switch (expiration) {
+        case 'never':
+            return '';
+        case '1h':
+            return 60;
+        case '24h':
+            return 24 * 60;
+        case '7d':
+            return 7 * 24 * 60;
+        case '30d':
+            return 30 * 24 * 60;
+    }
+}
+
+const allowAll = document.getElementById('allowAll');
+const typeCheckboxes = document.querySelectorAll(
+  'input[name="allowed_types"]'
+);
+
+allowAll.addEventListener('change', () => {
+    typeCheckboxes.forEach(cb => cb.checked = allowAll.checked);
+});
+
+typeCheckboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+        allowAll.checked = [...typeCheckboxes].every(c => c.checked);
+    });
+});
 
 // Initialize
 loadClipboards();

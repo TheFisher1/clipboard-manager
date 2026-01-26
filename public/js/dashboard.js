@@ -118,7 +118,6 @@ document.getElementById('createClipboardForm').addEventListener('submit', async 
 // Show clipboard details
 async function showClipboardDetails(id) {
     currentClipboardId = id;
-    detailsModal.style.display = 'block';
     
     try {
         const clipboard = await api.getClipboard(id);
@@ -128,6 +127,8 @@ async function showClipboardDetails(id) {
         createCollapsible(clipboard);
         
         await loadItems(id);
+        
+        detailsModal.style.display = 'block';
     } catch (error) {
         alert('Failed to load clipboard: ' + error.message);
     }

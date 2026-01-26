@@ -180,7 +180,7 @@ function resetClipboardForm() {
 function resetItemForm() {
     createItemForm.reset();
     itemTypeSelect.value = 'text';
-    itemTypeFields.innerHTML = '';
+    itemTypeFields.innerHTML = getTypeFields(itemTypeSelect.value);
 }
 
 // Load items

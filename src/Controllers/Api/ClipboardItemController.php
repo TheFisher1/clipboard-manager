@@ -77,6 +77,13 @@ class ClipboardItemController
     private function create(int $clipboardId, int $userId): void
     {
         $data = json_decode(file_get_contents('php://input'), true);
+
+        $clipboard = $this->clipboardRepository->findById($clipboardId);
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannot add items to clipboard thats not yours', 403);
+            return;
+        }
+
         
         if (!isset($data['content_type'])) {
             $this->sendError('Missing required fields: content_type', 400);
@@ -111,8 +118,14 @@ class ClipboardItemController
             $this->sendError('Item not found', 404);
             return;
         }
+        $clipboard = $this->clipboardRepository->findById($item->getClipboardId());
+        
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannot update items from clipboard thats not yours', 403);
+            return;
+        }
 
-        if ($item->getSubmittedBy() !== $userId) {
+        if ($clipboard->isPublic() && $item->getSubmittedBy() !== $userId && $clipboard->getOwnerId() !== $userId) {
             $this->sendError('You cannot update items that are not yours', 403);
             return;
         }
@@ -138,7 +151,14 @@ class ClipboardItemController
             return;
         }
 
-        if ($item->getSubmittedBy() !== $userId) {
+        $clipboard = $this->clipboardRepository->findById($item->getClipboardId());
+        
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannot delete items from clipboard thats not yours', 403);
+            return;
+        }
+
+        if ($clipboard->isPublic() && $item->getSubmittedBy() !== $userId && $clipboard->getOwnerId() !== $userId) {
             $this->sendError('You cannot delete items that are not yours', 403);
             return;
         }

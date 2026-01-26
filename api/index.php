@@ -59,38 +59,22 @@ if (preg_match('#^/subscriptions/(\d+)$#', $path, $matches)) {
 
 // CLIPBOARD ACTIVITY ROUTES
 
-if ($path === '/actions') {
+if (preg_match(
+    '#^/actions(?:/(user|clipboard|item))?(?:/(\d+))?$#',
+    $path,
+    $matches
+)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
     $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, null, null, $userId);
-    exit;
-}
 
-if ($path === '/actions/user') {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
-    $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'user', null, $userId);
-    exit;
-}
+    $type = $matches[1] ?? null;
+    $id   = $matches[2] ?? null;
 
-if (preg_match('#^/actions/clipboard/(\d+)$#', $path, $matches)) {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
-    $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'clipboard', $matches[1], $userId);
-    exit;
-}
+    if ($type === null && $id !== null) {
+        $type = 'id';
+    }
 
-if (preg_match('#^/actions/item/(\d+)$#', $path, $matches)) {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
-    $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'item', $matches[1], $userId);
-    exit;
-}
-
-if (preg_match('#^/actions/(\d+)$#', $path, $matches)) {
-    require_once __DIR__ . '/../src/Controllers/Api/ClipboardActivityController.php';
-    $controller = new ClipboardActivityController();
-    $controller->handleRequest($method, 'id', $matches[1], $userId);
+    $controller->handleRequest($method, $type, $id, $userId);
     exit;
 }
 
@@ -121,21 +105,31 @@ if (preg_match('#^/clipboards/mine$#', $path)) {
     exit;
 }
 
-if (preg_match('#^/clipboards(/(\d+))?(/items)?(/(\d+))?$#', $path, $matches)) {
+if (preg_match('#^/items/(\d+)$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
+    $controller = new ClipboardItemController();
+
+    $itemId = (int)$matches[1];
+    $controller->handleRequest($method, null, $itemId, $userId);
+    exit;
+}
+
+if (preg_match('#^/clipboards(/(\d+))?(/items)?$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
     $controller = new ClipboardController();
-    
+
     $clipboardId = $matches[2] ?? null;
     $isItems = isset($matches[3]);
-    $itemId = $matches[5] ?? null;
-    
+
     if ($isItems) {
         require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
         $itemController = new ClipboardItemController();
-        $itemController->handleRequest($method, $clipboardId, $itemId, $userId);
+
+        $itemController->handleRequest($method, $clipboardId, null, $userId);
     } else {
         $controller->handleRequest($method, $clipboardId, $userId);
     }
+    exit;
 } else {
     http_response_code(404);
     echo json_encode(['error' => 'Endpoint not found']);

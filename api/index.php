@@ -89,12 +89,13 @@ if (preg_match('#^/groups(?:/(\d+))?(?:/clipboards(?:/(\d+))?)?$#', $path, $matc
     $isClipboards = strpos($path, '/clipboards') !== false;
 
     if ($isClipboards) {
-        $controller->handleRequest($method, $groupId, 'clipboards', $clipboardId);
+        $controller->handleRequest($method, $groupId, $userId, 'clipboards', $clipboardId);
     } else {
-        $controller->handleRequest($method, $groupId);
+        $controller->handleRequest($method, $groupId, $userId);
     }
     exit;
 }
+
 
 // CLIPBOARD && CLIPBOARD ITEM ROUTES
 

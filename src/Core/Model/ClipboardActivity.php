@@ -2,7 +2,7 @@
 
 class ClipboardActivity
 {
-    private int $id;
+    private ?int $id;
     private int $clipboard_id;
     private ?int $item_id;
     private int $user_id;

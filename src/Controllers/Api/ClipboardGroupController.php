@@ -1,26 +1,29 @@
 <?php
 
 require_once __DIR__ . '/../../Core/Repository/ClipboardGroupRepository.php';
+require_once __DIR__ . '/../../Core/Repository/ClipboardRepository.php';
 require_once __DIR__ . '/../../Core/Model/ClipboardGroup.php';
 
 class ClipboardGroupController
 {
     private ClipboardGroupRepository $repository;
+    private ClipboardRepository $clipboardRepository;
 
     public function __construct()
     {
         $this->repository = new ClipboardGroupRepository();
+        $this->clipboardRepository = new ClipboardRepository();
     }
 
-    public function handleRequest(string $method, ?string $id, ?string $action = null, ?string $clipboardId = null): void
+    public function handleRequest(string $method, ?string $id, int $userId, ?string $action = null, ?string $clipboardId = null): void
     {
         try {
             switch ($method) {
                 case 'GET':
                     if ($id && $action === 'clipboards') {
-                        $this->getClipboards((int)$id);
+                        $this->getClipboards((int)$id, $userId);
                     } elseif ($id) {
-                        $this->getOne((int)$id);
+                        $this->getOne((int)$id, $userId);
                     } else {
                         $this->getAll();
                     }
@@ -28,17 +31,17 @@ class ClipboardGroupController
 
                 case 'POST':
                     if ($id && $action === 'clipboards' && $clipboardId) {
-                        $this->addClipboard((int)$id, (int)$clipboardId);
+                        $this->addClipboard((int)$id, (int)$clipboardId, $userId);
                     } else {
-                        $this->create();
+                        $this->create($userId);
                     }
                     break;
 
                 case 'DELETE':
                     if ($id && $action === 'clipboards' && $clipboardId) {
-                        $this->removeClipboard((int)$id, (int)$clipboardId);
+                        $this->removeClipboard((int)$id, (int)$clipboardId, $userId);
                     } elseif ($id) {
-                        $this->delete((int)$id);
+                        $this->delete((int)$id, $userId);
                     } else {
                         $this->sendError('Missing group id', 400);
                     }
@@ -58,28 +61,34 @@ class ClipboardGroupController
         $this->sendResponse(array_map(fn($g) => $this->toArray($g), $groups));
     }
 
-    private function getOne(int $id): void
+    private function getOne(int $id, int $userId): void
     {
         $group = $this->repository->findById($id);
         if (!$group) {
             $this->sendError('Group not found', 404);
             return;
         }
+
+        if ($group->getCreatedBy() !== $userId) {
+            $this->sendError('You cannnot access group thats not yours', 403);
+            return;
+        }
+
         $this->sendResponse($this->toArray($group));
     }
 
-    private function create(): void
+    private function create(int $userId): void
     {
         $data = json_decode(file_get_contents('php://input'), true);
 
-        if (!isset($data['name']) || !isset($data['created_by'])) {
-            $this->sendError('Missing required fields: name, created_by', 400);
+        if (!isset($data['name'])) {
+            $this->sendError('Missing required fields: name', 400);
             return;
         }
 
         $group = new ClipboardGroup(
             $data['name'],
-            (int)$data['created_by'],
+            $userId,
             $data['description'] ?? null
         );
 
@@ -89,7 +98,7 @@ class ClipboardGroupController
         $this->sendResponse($this->toArray($created), 201);
     }
 
-    private function delete(int $id): void
+    private function delete(int $id, int $userId): void
     {
         $group = $this->repository->findById($id);
         if (!$group) {
@@ -97,24 +106,79 @@ class ClipboardGroupController
             return;
         }
 
+        if ($group->getCreatedBy() !== $userId) {
+            $this->sendError('You cannnot delete group thats not yours', 403);
+            return;
+        }
+
         $this->repository->delete($id);
         $this->sendResponse(['message' => 'Group deleted successfully']);
     }
 
-    private function addClipboard(int $groupId, int $clipboardId): void
+    private function addClipboard(int $groupId, int $clipboardId, int $userId): void
     {
+        $group = $this->repository->findById($groupId);
+        if (!$group) {
+            $this->sendError('Group does not exist', 404);
+            return;
+        }
+
+        if ($group->getCreatedBy() !== $userId) {
+            $this->sendError('You cannnot edit group thats not yours', 403);
+            return;
+        }
+
+        $clipboard = $this->clipboardRepository->findById($clipboardId);
+        if (!$clipboard) {
+            $this->sendError('Clipboard does not exist', 404);
+            return;
+        }
+
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannnot add clipboard thats not yours to a group', 403);
+            return;
+        }
+
         $this->repository->addClipboardToGroup($clipboardId, $groupId);
         $this->sendResponse(['message' => 'Clipboard added to group'], 201);
     }
 
-    private function removeClipboard(int $groupId, int $clipboardId): void
+    private function removeClipboard(int $groupId, int $clipboardId, int $userId): void
     {
+        $group = $this->repository->findById($groupId);
+        if (!$group) {
+            $this->sendError('Group does not exist', 404);
+            return;
+        }
+
+        if ($group->getCreatedBy() !== $userId) {
+            $this->sendError('You cannnot edit group thats not yours', 403);
+            return;
+        }
+
+        $clipboard = $this->clipboardRepository->findById($clipboardId);
+        if (!$clipboard) {
+            $this->sendError('Clipboard does not exist', 404);
+            return;
+        }
+
         $this->repository->removeClipboardFromGroup($clipboardId, $groupId);
         $this->sendResponse(['message' => 'Clipboard removed from group']);
     }
 
-    private function getClipboards(int $groupId): void
+    private function getClipboards(int $groupId, int $userId): void
     {
+        $group = $this->repository->findById($groupId);
+        if (!$group) {
+            $this->sendError('Group does not exist', 404);
+            return;
+        }
+
+        if ($group->getCreatedBy() !== $userId) {
+            $this->sendError('You cannnot acess group thats not yours', 403);
+            return;
+        }
+
         $clipboards = $this->repository->getClipboardsByGroup($groupId);
         $this->sendResponse($clipboards);
     }
@@ -122,11 +186,11 @@ class ClipboardGroupController
     private function toArray(ClipboardGroup $group): array
     {
         return [
-            'id' => $group->id,
-            'name' => $group->name,
-            'description' => $group->description,
-            'created_by' => $group->created_by,
-            'created_at' => $group->created_at
+            'id' => $group->getId(),
+            'name' => $group->getName(),
+            'description' => $group->getDescription(),
+            'created_by' => $group->getCreatedBy(),
+            'created_at' => $group->getCreatedAt()
         ];
     }
 

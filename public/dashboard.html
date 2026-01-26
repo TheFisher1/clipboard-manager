@@ -62,22 +62,74 @@
 
             <!-- Clipboard Details Modal -->
             <div id="detailsModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2 id="clipboardName"></h2>
-                    <p id="clipboardDescription"></p>
-                    <a id="collapsibleButton" class="collapsible-button">Show details</a>
-                    <p id="collapsibleContent" class="collapsible-content"></p>
-                    
-                    <div class="items-section">
-                        <h3>Items</h3>
-                        <button id="addItemBtn" class="btn btn-sm btn-primary">+ Add Item</button>
-                        <div id="itemsList" class="items-list">
-                            <div class="loading">Loading items...</div>
+                <div class="modal-content stepper">
+                    <div class="stepper-track" id="stepperTrack">
+                        
+                        <!-- Clipboard Details Step -->
+                        <div class="step step-details">
+
+                            <span class="close">&times;</span>
+                            <h2 id="clipboardName"></h2>
+                            <p id="clipboardDescription"></p>
+                            <a id="collapsibleButton" class="collapsible-button">Show details</a>
+                            <p id="collapsibleContent" class="collapsible-content"></p>
+                            
+                            <div class="items-section">
+                                <h3>Items</h3>
+                                <button id="addItemStepBtn" class="btn btn-sm btn-primary">+ Add Item</button>
+                                <div id="itemsList" class="items-list">
+                                    <div class="loading">Loading items...</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Item Creation Step -->
+                        <div class="step step-item-add">
+
+                            <button id="backToDetails" class="btn btn-sm btn-secondary">
+                                ← Back
+                            </button>
+
+                            <h3>Add Item</h3>
+
+                            <form id="createItemForm">
+                                <div class="form-group">
+                                    <label for="name">Item type</label>
+                                    <select id="itemTypeSelect" name="content-type">
+                                        <option value="text">Text</option>
+                                        <option value="code">Code</option>
+                                        <option value="image">Image file</option>
+                                        <option value="file">Other file</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="name">Name *</label>
+                                    <input type="text" id="name" name="name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" rows="3"></textarea>
+                                </div>
+
+                                <!-- Change depending on the item type -->
+                                <div id="itemTypeFields">
+                                    <div class="form-group">
+                                        <label for="content-text">Text</label>
+                                        <textarea type="text" id="content-text" name="content-text" rows="4" required></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Create</button>
+                                </div>
+                            </form>
+
                         </div>
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 

@@ -15,22 +15,38 @@ class ClipboardItemController
         $this->clipboardRepository = new ClipboardRepository();
     }
 
-    public function handleRequest(string $method, ?string $clipboardId, ?string $itemId, int $userId): void
+    public function handleRequest(string $method, string $path, ?string $clipboardId, ?string $itemId, int $userId): void
     {
         try {
             switch ($method) {
                 case 'GET':
-                    $itemId ? $this->getOne((int)$itemId, $userId) : $this->getByClipboard((int)$clipboardId, $userId);
+                    if ($itemId && $path === 'view') {
+                        $this->view((int)$itemId, $userId);
+                        return;
+                    }
+
+                    $itemId
+                        ? $this->getOne((int)$itemId, $userId)
+                        : $this->getByClipboard((int)$clipboardId, $userId);
                     break;
+
                 case 'POST':
+                    if ($clipboardId && $path === 'file') {
+                        $this->createFile((int)$clipboardId, $userId);
+                        return;
+                    }
+
                     $this->create((int)$clipboardId, $userId);
                     break;
+
                 case 'PUT':
                     $this->update((int)$itemId, $userId);
                     break;
+
                 case 'DELETE':
                     $this->delete((int)$itemId, $userId);
                     break;
+
                 default:
                     $this->sendError('Method not allowed', 405);
             }
@@ -109,6 +125,100 @@ class ClipboardItemController
         $created = $this->repository->findById($id);
         
         $this->sendResponse($this->toArray($created), 201);
+    }
+
+    private function createFile(int $clipboardId, int $userId): void
+    {
+        if (!isset($_FILES['file'])) {
+            $this->sendError('Missing file', 400);
+            return;
+        }
+
+        $clipboard = $this->clipboardRepository->findById($clipboardId);
+        if (!$clipboard) {
+            $this->sendError('Clipboard not found', 404);
+            return;
+        }
+
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('Forbidden', 403);
+            return;
+        }
+
+        $uploadDir = __DIR__ . '/../../../uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $originalFilename = $_FILES['file']['name'];
+        $fileSize = $_FILES['file']['size'];
+
+        $safeName = bin2hex(random_bytes(16));
+        $ext = pathinfo($originalFilename, PATHINFO_EXTENSION);
+        $filename = $safeName . ($ext ? ".$ext" : '');
+
+        if (!move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir . $filename)) {
+            $this->sendError('Upload failed', 500);
+            return;
+        }
+
+        $item = new ClipboardItem(
+            $clipboardId,
+            'file',
+            $userId,
+            null,
+            'uploads/' . $filename,
+            $originalFilename,
+            $fileSize,
+            null,
+            $_POST['title'] ?? null,
+            $_POST['description'] ?? null,
+            null,
+            false
+        );
+
+        $id = $this->repository->create($item);
+        $created = $this->repository->findById($id);
+
+        $this->sendResponse($this->toArray($created), 201);
+    }
+
+    private function view(int $itemId, int $userId): void
+    {
+        $item = $this->repository->findById($itemId);
+
+        if (!$item || !$item->getFilePath()) {
+            $this->sendError('File not found', 404);
+            return;
+        }
+
+        $clipboard = $this->clipboardRepository->findById($item->getClipboardId());
+        if (!$clipboard) {
+            $this->sendError('Clipboard not found', 404);
+            return;
+        }
+
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannot view this file', 403);
+            return;
+        }
+
+        $filePath = __DIR__ . '/../../../' . $item->getFilePath();
+        if (!file_exists($filePath)) {
+            $this->sendError('File not found', 404);
+            return;
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $filePath);
+        finfo_close($finfo);
+
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . filesize($filePath));
+        header('Content-Disposition: inline; filename="' . $item->getOriginalFilename() . '"');
+
+        readfile($filePath);
+        exit;
     }
 
     private function update(int $id, int $userId): void

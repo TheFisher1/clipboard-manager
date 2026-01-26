@@ -96,9 +96,6 @@ if (preg_match('#^/groups(?:/(\d+))?(?:/clipboards(?:/(\d+))?)?$#', $path, $matc
     exit;
 }
 
-
-// CLIPBOARD && CLIPBOARD ITEM ROUTES
-
 if (preg_match('#^/clipboards/mine$#', $path)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
     $controller = new ClipboardController();
@@ -106,12 +103,31 @@ if (preg_match('#^/clipboards/mine$#', $path)) {
     exit;
 }
 
+if (preg_match('#^/clipboards/(\d+)/items/file$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
+    $controller = new ClipboardItemController();
+
+    $clipboardId = (string)$matches[1];
+    $controller->handleRequest($method, 'file', $clipboardId, null, $userId);
+    exit;
+}
+
+
+if (preg_match('#^/items/(\d+)/view$#', $path, $matches)) {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
+    $controller = new ClipboardItemController();
+
+    $itemId = (string)$matches[1];
+    $controller->handleRequest($method, 'view', null, $itemId, $userId);
+    exit;
+}
+
 if (preg_match('#^/items/(\d+)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
     $controller = new ClipboardItemController();
 
-    $itemId = (int)$matches[1];
-    $controller->handleRequest($method, null, $itemId, $userId);
+    $itemId = (string)$matches[1];
+    $controller->handleRequest($method, '', null, $itemId, $userId);
     exit;
 }
 
@@ -125,13 +141,12 @@ if (preg_match('#^/clipboards(/(\d+))?(/items)?$#', $path, $matches)) {
     if ($isItems) {
         require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
         $itemController = new ClipboardItemController();
-
-        $itemController->handleRequest($method, $clipboardId, null, $userId);
+        $itemController->handleRequest($method, '', $clipboardId, null, $userId);
     } else {
-        $controller->handleRequest($method, $clipboardId, $userId);
+        $controller->handleRequest($method, $clipboardId, $userId, null);
     }
     exit;
-} else {
-    http_response_code(404);
-    echo json_encode(['error' => 'Endpoint not found']);
 }
+
+http_response_code(404);
+echo json_encode(['error' => 'Endpoint not found']);

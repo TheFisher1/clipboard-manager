@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard System</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/browse.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav id="mainNav">
+                <h1 class="center-text">Browse Clipboards</h1>
+                <a href="index.html" class="hover-underline-animation"
+                    >Home</a
+                >
+                <a
+                    href="browse.html"
+                    class="active hover-underline-animation"
+                    >Browse</a
+                >
+                <div id="navAuth" class="nav-auth-buttons"></div>
+            </nav>
+        </header>
+
+        <main>
+            <input class="search-box" id="clipboardSearch" placeholder="Search...">
+            <div id="clipboardsList" class="clipboards-grid">
+                <div class="loading">Loading clipboards...</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/browse.js"></script>
+    <script src="js/nav.js"></script>
+</body>
+</html>

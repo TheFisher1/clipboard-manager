@@ -45,8 +45,16 @@ class SessionManager {
             $_SESSION['regenerated_at'] = $currentTime;
         }
     }
+
+    private static function ensureSessionStarted(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
     
     public static function isAuthenticated(): bool {
+        self::ensureSessionStarted();
         return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
     }
     

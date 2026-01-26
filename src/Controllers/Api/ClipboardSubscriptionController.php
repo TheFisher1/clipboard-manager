@@ -1,49 +1,50 @@
 <?php
 
 require_once __DIR__ . '/../../Core/Repository/ClipboardSubscriptionRepository.php';
+require_once __DIR__ . '/../../Core/Repository/ClipboardRepository.php';
 require_once __DIR__ . '/../../Core/Model/ClipboardSubscription.php';
 
 class ClipboardSubscriptionController
 {
     private ClipboardSubscriptionRepository $repository;
+    private ClipboardRepository $clipboardRepository;
 
     public function __construct()
     {
         $this->repository = new ClipboardSubscriptionRepository();
+        $this->clipboardRepository = new ClipboardRepository();
     }
 
-    public function handleRequest(string $method, ?string $clipboardId, ?string $userId): void
+    public function handleRequest(string $method, ?string $clipboardId, int $userId): void
     {
         try {
             switch ($method) {
                 case 'GET':
-                    if ($clipboardId && $userId) {
-                        $this->getOne((int)$clipboardId, (int)$userId);
-                    } elseif ($userId) {
-                        $this->getByUser((int)$userId);
+                    if ($clipboardId) {
+                        $this->getOne((int)$clipboardId, $userId);
                     } else {
-                        $this->sendError('Missing parameters', 400);
+                        $this->getByUser($userId);
                     }
                     break;
 
                 case 'POST':
-                    $this->create();
+                    $this->create($userId);
                     break;
 
                 case 'PUT':
-                    if (!$clipboardId || !$userId) {
+                    if (!$clipboardId) {
                         $this->sendError('Missing parameters', 400);
                         return;
                     }
-                    $this->update((int)$clipboardId, (int)$userId);
+                    $this->update((int)$clipboardId, $userId);
                     break;
 
                 case 'DELETE':
-                    if (!$clipboardId || !$userId) {
+                    if (!$clipboardId) {
                         $this->sendError('Missing parameters', 400);
                         return;
                     }
-                    $this->delete((int)$clipboardId, (int)$userId);
+                    $this->delete((int)$clipboardId, $userId);
                     break;
 
                 default:
@@ -75,18 +76,31 @@ class ClipboardSubscriptionController
         );
     }
 
-    private function create(): void
+    private function create(int $userId): void
     {
         $data = json_decode(file_get_contents('php://input'), true);
 
-        if (!isset($data['clipboard_id'], $data['user_id'])) {
-            $this->sendError('Missing required fields: clipboard_id, user_id', 400);
+        if (!isset($data['clipboard_id'])) {
+            $this->sendError('Missing required fields: clipboard_id', 400);
+            return;
+        }
+
+        $clipboardId = (int)$data['clipboard_id'];
+        $clipboard = $this->clipboardRepository->findById($clipboardId);
+
+        if (!$clipboard) {
+            $this->sendError('Clipboard not found', 404);
+            return;
+        }
+    
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('You cannot subscribe to a private clipboard', 403);
             return;
         }
 
         $created = $this->repository->create(
             (int)$data['clipboard_id'],
-            (int)$data['user_id'],
+            $userId,
             $data['email_notifications'] ?? true
         );
 
@@ -97,7 +111,7 @@ class ClipboardSubscriptionController
 
         $subscription = $this->repository->find(
             (int)$data['clipboard_id'],
-            (int)$data['user_id']
+            $userId
         );
 
         $this->sendResponse($this->toArray($subscription), 201);

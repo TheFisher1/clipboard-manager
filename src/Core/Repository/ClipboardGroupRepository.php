@@ -3,6 +3,8 @@
 require_once __DIR__ . '/../../../config/config.php';
 require_once __DIR__ . '/../Model/ClipboardGroup.php';
 
+//dobavi find mine
+
 class ClipboardGroupRepository
 {
     private PDO $db;
@@ -19,9 +21,9 @@ class ClipboardGroupRepository
             VALUES (:name, :description, :created_by)
         ");
         $stmt->execute([
-            ':name' => $group->name,
-            ':description' => $group->description,
-            ':created_by' => $group->created_by
+            ':name' => $group->getName(),
+            ':description' => $group->getDescription(),
+            ':created_by' => $group->getCreatedBy()
         ]);
 
         return (int)$this->db->lastInsertId();
@@ -39,7 +41,6 @@ class ClipboardGroupRepository
             $row['name'],
             $row['created_by'],
             $row['description'],
-            null,
             $row['id'],
             $row['created_at']
         );
@@ -54,7 +55,6 @@ class ClipboardGroupRepository
             $row['name'],
             $row['created_by'],
             $row['description'],
-            null,
             $row['id'],
             $row['created_at']
         ), $rows);

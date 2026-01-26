@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../../Core/Repository/ClipboardRepository.php';
 require_once __DIR__ . '/../../Core/Model/Clipboard.php';
-require_once __DIR__ . '/../../Services/SessionManager.php';
 
 class ClipboardController
 {
@@ -13,25 +12,25 @@ class ClipboardController
         $this->repository = new ClipboardRepository();
     }
 
-    public function handleRequest(string $method, ?string $id, ?string $subroute = null): void
+    public function handleRequest(string $method, ?string $id, int $userId, ?string $subroute = null): void
     {
         try {
             switch ($method) {
                 case 'GET':
                     if ($subroute === 'mine') {
-                        $this->getMine();
+                        $this->getMine($userId);
                     } else {
-                        $id ? $this->getOne((int)$id) : $this->getAll();
+                        $id ? $this->getOne((int)$id, $userId) : $this->getAll($userId);
                     }
                     break;
                 case 'POST':
-                    $this->create();
+                    $this->create($userId);
                     break;
                 case 'PUT':
-                    $this->update((int)$id);
+                    $this->update((int)$id, $userId);
                     break;
                 case 'DELETE':
-                    $this->delete((int)$id);
+                    $this->delete((int)$id, $userId);
                     break;
                 default:
                     $this->sendError('Method not allowed', 405);
@@ -41,24 +40,21 @@ class ClipboardController
         }
     }
 
-    private function getAll(): void
+    private function getAll(int $userId): void
     {
-        $userId = SessionManager::getCurrentUserId();
         $clipboards = $this->repository->findPublicOrOwned($userId);
         $this->sendResponse(array_map(fn($c) => $this->toArray($c), $clipboards));
     }
 
-    private function getMine(): void
+    private function getMine(int $userId): void
     {
-        $userId = SessionManager::getCurrentUserId();
         $clipboards = $this->repository->findByOwnerId($userId);
         $this->sendResponse(array_map(fn($c) => $this->toArray($c), $clipboards));
     }
 
 
-    private function getOne(int $id): void
+    private function getOne(int $id, int $userId): void
     {
-        $userId = SessionManager::getCurrentUserId();
         $clipboard = $this->repository->findById($id);
         if (!$clipboard) {
             $this->sendError('Clipboard not found', 404);
@@ -73,18 +69,18 @@ class ClipboardController
         $this->sendResponse($this->toArray($clipboard));
     }
 
-    private function create(): void
+    private function create(int $userId): void
     {
         $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!isset($data['name']) || !isset($data['owner_id'])) {
+
+        if (!isset($data['name'])) {
             $this->sendError('Missing required fields: name, owner_id', 400);
             return;
         }
 
         $clipboard = new Clipboard(
             $data['name'],
-            (int)$data['owner_id'],
+            $userId,
             $data['description'] ?? null,
             $data['is_public'] ?? false,
             $data['max_subscribers'] ?? null,
@@ -99,9 +95,8 @@ class ClipboardController
         $this->sendResponse($this->toArray($created), 201);
     }
 
-    private function update(int $id): void
+    private function update(int $id, int $userId): void
     {
-        $userId = SessionManager::getCurrentUserId();
 
         $clipboard = $this->repository->findById($id);
         if (!$clipboard) {
@@ -128,9 +123,8 @@ class ClipboardController
         $this->sendResponse($this->toArray($updated));
     }
 
-    private function delete(int $id): void
+    private function delete(int $id, int $userId): void
     {
-        $userId = SessionManager::getCurrentUserId();
         $clipboard = $this->repository->findById($id);
         if (!$clipboard) {
             $this->sendError('Clipboard not found', 404);

@@ -53,10 +53,6 @@ class ClipboardItem
         $this->createdAt = null;
     }
 
-    /* =======================
-       Getters
-       ======================= */
-
     public function getId(): ?int
     {
         return $this->id;
@@ -142,10 +138,6 @@ class ClipboardItem
         return $this->createdAt;
     }
 
-    /* =======================
-       Setters
-       ======================= */
-
     public function setContentText(?string $contentText): void
     {
         $this->contentText = $contentText;
@@ -206,9 +198,6 @@ class ClipboardItem
         $this->downloadCount++;
     }
 
-    /* =======================
-       Helpers
-       ======================= */
 
     public static function fromDatabase(array $row): self
     {

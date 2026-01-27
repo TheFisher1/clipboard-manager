@@ -2,12 +2,14 @@
 
 require_once __DIR__ . '/../../Core/Repository/ClipboardItemRepository.php';
 require_once __DIR__ . '/../../Core/Repository/ClipboardRepository.php';
+require_once __DIR__ . '/../../Core/Repository/ClipboardActivityRepository.php';
 require_once __DIR__ . '/../../Core/Model/ClipboardItem.php';
 
 class ClipboardItemController
 {
     private ClipboardItemRepository $repository;
     private ClipboardRepository $clipboardRepository;
+    private ClipboardActivityRepository $clipboardActivityRepository;
     private const MAX_FILE_SIZE = 10 * 1024 * 1024;
     private const MAX_TEXT_LENGTH = 4096;
 
@@ -15,6 +17,7 @@ class ClipboardItemController
     {
         $this->repository = new ClipboardItemRepository();
         $this->clipboardRepository = new ClipboardRepository();
+        $this->clipboardActivityRepository = new ClipboardActivityRepository();
     }
 
     public function handleRequest(string $method, string $path, ?string $clipboardId, ?string $itemId, int $userId): void
@@ -77,6 +80,16 @@ class ClipboardItemController
         }
 
         $items = $this->repository->findByClipboardId($clipboardId);
+
+        foreach($items as $item) {
+            if ($item->getContentType() !== 'file') {
+                $item->incrementViewCount();
+                $this->clipboardActivityRepository->create(new ClipboardActivity($clipboard->getId(), $userId, 'view', $item->getId()));
+                $this->repository->incrementViewCount($item->getId());
+            }
+            
+        }
+
         $this->sendResponse(array_map(fn($i) => $this->toArray($i), $items));
     }
 
@@ -134,7 +147,9 @@ class ClipboardItemController
 
         $id = $this->repository->create($item);
         $created = $this->repository->findById($id);
-        
+
+        $this->clipboardActivityRepository->create(new ClipboardActivity($clipboard->getId(), $userId, 'create', $id));
+
         $this->sendResponse($this->toArray($created), 201);
     }
 
@@ -195,6 +210,8 @@ class ClipboardItemController
 
         $id = $this->repository->create($item);
         $created = $this->repository->findById($id);
+
+        $this->clipboardActivityRepository->create(new ClipboardActivity($clipboard->getId(), $userId, 'create', $id));
 
         $this->sendResponse($this->toArray($created), 201);
     }
@@ -279,6 +296,8 @@ class ClipboardItemController
             return;
         }
 
+        $this->clipboardActivityRepository->create(new ClipboardActivity($clipboard->getId(), $userId, 'delete', $id));
+
         $this->repository->delete($id);
         $this->sendResponse(['message' => 'Item deleted successfully']);
     }
@@ -304,6 +323,16 @@ class ClipboardItemController
             $this->sendError('File not found', 404);
             return;
         }
+
+        $action = $disposition === 'inline' ? 'view' : 'download';
+
+        if ($action == 'download') {
+            $this->repository->incrementDownloadCount($item->getId());
+        } else {
+            $this->repository->incrementViewCount($item->getId());
+        }
+
+        $this->clipboardActivityRepository->create(new ClipboardActivity($clipboard->getId(), $userId, $action, $item->getId()));
     
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mime = finfo_file($finfo, $filePath);

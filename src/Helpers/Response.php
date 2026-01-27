@@ -21,4 +21,21 @@ class Response
             'message' => $message
         ], $status);
     }
+
+    public static function success($data = null, int $status = 200)
+    {
+        $response = [
+            'success' => true
+        ];
+        
+        if ($data !== null) {
+            if (is_array($data) && isset($data['message'])) {
+                $response = array_merge($response, $data);
+            } else {
+                $response['data'] = $data;
+            }
+        }
+        
+        self::json($response, $status);
+    }
 }

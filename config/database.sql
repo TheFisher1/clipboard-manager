@@ -84,20 +84,19 @@ CREATE TABLE clipboard_items (
     view_count INT DEFAULT 0,
     download_count INT DEFAULT 0,
     is_single_use BOOLEAN DEFAULT FALSE,
-    is_consumed BOOLEAN DEFAULT FALSE, -- For single-use items
+    is_consumed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (clipboard_id) REFERENCES clipboards(id) ON DELETE CASCADE,
     FOREIGN KEY (submitted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Activity history and audit trail
 CREATE TABLE clipboard_activity (
     id INT PRIMARY KEY AUTO_INCREMENT,
     clipboard_id INT NOT NULL,
     item_id INT NULL,
     user_id INT NOT NULL,
     action_type ENUM('create', 'view', 'download', 'delete', 'expire', 'share') NOT NULL,
-    details JSON NULL, -- Additional action metadata
+    details JSON NULL,
     ip_address VARCHAR(45) NULL,
     user_agent TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -106,19 +105,62 @@ CREATE TABLE clipboard_activity (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- API tokens for external integrations
 CREATE TABLE api_tokens (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
-    permissions JSON, -- Array of allowed operations
+    permissions JSON,
     last_used_at TIMESTAMP NULL,
     expires_at TIMESTAMP NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE admin_audit_log (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    admin_user_id INT NOT NULL,
+    action_type VARCHAR(50) NOT NULL,
+    target_type VARCHAR(50) NOT NULL,
+    target_id INT NULL,
+    action_details JSON NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_admin_user (admin_user_id),
+    INDEX idx_action_type (action_type),
+    INDEX idx_target (target_type, target_id),
+    INDEX idx_created_at (created_at)
+);
+
+CREATE TABLE system_settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT NOT NULL,
+    setting_type VARCHAR(20) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    description TEXT NULL,
+    is_public BOOLEAN DEFAULT FALSE,
+    updated_by INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_category (category),
+    INDEX idx_setting_key (setting_key)
+);
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_is_admin ON users(is_admin);
+CREATE INDEX idx_clipboards_owner ON clipboards(owner_id);
+CREATE INDEX idx_clipboards_public ON clipboards(is_public);
+CREATE INDEX idx_clipboard_items_clipboard ON clipboard_items(clipboard_id);
+CREATE INDEX idx_clipboard_items_submitted ON clipboard_items(submitted_by);
+CREATE INDEX idx_clipboard_items_expires ON clipboard_items(expires_at);
+CREATE INDEX idx_clipboard_activity_user ON clipboard_activity(user_id);
+CREATE INDEX idx_clipboard_activity_clipboard ON clipboard_activity(clipboard_id);
+CREATE INDEX idx_clipboard_activity_created ON clipboard_activity(created_at);
 
 INSERT INTO users (email, password_hash, name, is_admin) VALUES 
 ('admin@test.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', TRUE);

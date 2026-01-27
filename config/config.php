@@ -1,18 +1,12 @@
 <?php
-/**
- * Basic Configuration
- */
 
-// Database
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'clipboard_system');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'clipboard_system');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 
-// App
 define('APP_NAME', 'Clipboard System');
 
-// Simple database connection function
 function getDB() {
     static $pdo = null;
     if ($pdo === null) {
@@ -21,3 +15,4 @@ function getDB() {
     }
     return $pdo;
 }
+

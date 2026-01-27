@@ -1,7 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/Clipboard.php';
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../Model/Clipboard.php';
+
 
 class ClipboardRepository
 {
@@ -19,7 +20,6 @@ class ClipboardRepository
                 name,
                 description,
                 owner_id,
-                group_id,
                 is_public,
                 max_subscribers,
                 max_items,
@@ -29,7 +29,6 @@ class ClipboardRepository
                 :name,
                 :description,
                 :owner_id,
-                :group_id,
                 :is_public,
                 :max_subscribers,
                 :max_items,
@@ -45,7 +44,6 @@ class ClipboardRepository
             ':name' => $data['name'],
             ':description' => $data['description'],
             ':owner_id' => $data['owner_id'],
-            ':group_id' => $data['group_id'],
             ':is_public' => $data['is_public'],
             ':max_subscribers' => $data['max_subscribers'],
             ':max_items' => $data['max_items'],
@@ -83,7 +81,6 @@ class ClipboardRepository
             UPDATE clipboards SET
                 name = :name,
                 description = :description,
-                group_id = :group_id,
                 is_public = :is_public,
                 max_subscribers = :max_subscribers,
                 max_items = :max_items,
@@ -98,7 +95,6 @@ class ClipboardRepository
         return $stmt->execute([
             ':name' => $data['name'],
             ':description' => $data['description'],
-            ':group_id' => $data['group_id'],
             ':is_public' => $data['is_public'],
             ':max_subscribers' => $data['max_subscribers'],
             ':max_items' => $data['max_items'],
@@ -130,4 +126,29 @@ class ClipboardRepository
 
         return array_map(fn($row) => Clipboard::fromDatabase($row), $rows);
     }
+    public function findPublicOrOwned(int $userId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT * FROM clipboards 
+            WHERE is_public = 1 OR owner_id = :userId
+        ");
+        
+        $stmt->execute(['userId' => $userId]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(fn($row) => Clipboard::fromDatabase($row), $rows);
+    }
+
+    public function deleteExpired(): int
+    {
+        $stmt = $this->db->prepare("
+            DELETE FROM clipboards
+            WHERE default_expiration_minutes IS NOT NULL
+            AND DATE_ADD(created_at, INTERVAL default_expiration_minutes MINUTE) <= NOW()
+        ");
+
+        $stmt->execute();
+        return $stmt->rowCount();
+    }
+
 }

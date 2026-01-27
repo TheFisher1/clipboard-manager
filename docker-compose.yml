@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./uploads:/var/www/html/uploads
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=clipboard_system
+      - DB_USER=root
+      - DB_PASS=rootpassword
+    networks:
+      - clipboard-network
+
+  db:
+    image: mysql:8.0
+    platform: linux/arm64
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: clipboard_system
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./config/database.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - clipboard-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    depends_on:
+      - db
+    networks:
+      - clipboard-network
+
+volumes:
+  mysql_data:
+
+networks:
+  clipboard-network:
+    driver: bridge

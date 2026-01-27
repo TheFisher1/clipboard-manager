@@ -1,7 +1,4 @@
 <?php
-/**
- * Simple Installation Script
- */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db_host = $_POST['db_host'] ?? 'localhost';
@@ -10,15 +7,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db_pass = $_POST['db_pass'] ?? '';
 
     try {
-        // Create database connection
         $pdo = new PDO("mysql:host={$db_host}", $db_user, $db_pass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // Create database
         $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$db_name}`");
         $pdo->exec("USE `{$db_name}`");
 
-        // Run SQL schema
         $sql = file_get_contents('config/database.sql');
         $sql = preg_replace('/CREATE DATABASE.*?;/i', '', $sql);
         $sql = preg_replace('/USE.*?;/i', '', $sql);
@@ -30,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Update config file
         $config = file_get_contents('config/config.php');
         $config = str_replace("'localhost'", "'{$db_host}'", $config);
         $config = str_replace("'clipboard_system'", "'{$db_name}'", $config);

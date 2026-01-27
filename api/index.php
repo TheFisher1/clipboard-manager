@@ -107,18 +107,20 @@ if (preg_match('#^/clipboards/(\d+)/items/file$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
     $controller = new ClipboardItemController();
 
-    $clipboardId = (string)$matches[1];
+    $clipboardId = $matches[1];
     $controller->handleRequest($method, 'file', $clipboardId, null, $userId);
     exit;
 }
 
 
-if (preg_match('#^/items/(\d+)/view$#', $path, $matches)) {
+if (preg_match('#^/items/(\d+)/(view|download)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
     $controller = new ClipboardItemController();
 
-    $itemId = (string)$matches[1];
-    $controller->handleRequest($method, 'view', null, $itemId, $userId);
+    $itemId = $matches[1];
+    $action = $matches[2];
+
+    $controller->handleRequest($method, $action, null, $itemId, $userId);
     exit;
 }
 
@@ -126,7 +128,7 @@ if (preg_match('#^/items/(\d+)$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardItemController.php';
     $controller = new ClipboardItemController();
 
-    $itemId = (string)$matches[1];
+    $itemId = $matches[1];
     $controller->handleRequest($method, '', null, $itemId, $userId);
     exit;
 }

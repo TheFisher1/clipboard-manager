@@ -8,6 +8,8 @@ class ClipboardItemController
 {
     private ClipboardItemRepository $repository;
     private ClipboardRepository $clipboardRepository;
+    private const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    private const MAX_TEXT_LENGTH = 4096;
 
     public function __construct()
     {
@@ -25,6 +27,11 @@ class ClipboardItemController
                         return;
                     }
 
+                    if ($itemId && $path === 'download') {
+                        $this->download((int)$itemId, $userId);
+                        return;
+                    }
+    
                     $itemId
                         ? $this->getOne((int)$itemId, $userId)
                         : $this->getByClipboard((int)$clipboardId, $userId);
@@ -106,6 +113,10 @@ class ClipboardItemController
             return;
         }
 
+        if (isset($data['content_text']) && strlen($data['content_text']) > self::MAX_TEXT_LENGTH) {
+            $this->sendError('content_text exceeds max length (4096)', 413);
+        }
+
         $item = new ClipboardItem(
             $clipboardId,
             $data['content_type'],
@@ -153,6 +164,11 @@ class ClipboardItemController
         $originalFilename = $_FILES['file']['name'];
         $fileSize = $_FILES['file']['size'];
 
+        if ($fileSize > self::MAX_FILE_SIZE) {
+            $this->sendError('File exceeds max size', 413);
+            return;
+        }
+
         $safeName = bin2hex(random_bytes(16));
         $ext = pathinfo($originalFilename, PATHINFO_EXTENSION);
         $filename = $safeName . ($ext ? ".$ext" : '');
@@ -192,33 +208,19 @@ class ClipboardItemController
             return;
         }
 
-        $clipboard = $this->clipboardRepository->findById($item->getClipboardId());
-        if (!$clipboard) {
-            $this->sendError('Clipboard not found', 404);
-            return;
-        }
+        $this->serveFile($item, $userId, 'inline');
+    }
 
-        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
-            $this->sendError('You cannot view this file', 403);
-            return;
-        }
+    private function download(int $itemId, int $userId): void
+    {
+        $item = $this->repository->findById($itemId);
 
-        $filePath = __DIR__ . '/../../../' . $item->getFilePath();
-        if (!file_exists($filePath)) {
+        if (!$item || !$item->getFilePath()) {
             $this->sendError('File not found', 404);
             return;
         }
 
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $filePath);
-        finfo_close($finfo);
-
-        header('Content-Type: ' . $mime);
-        header('Content-Length: ' . filesize($filePath));
-        header('Content-Disposition: inline; filename="' . $item->getOriginalFilename() . '"');
-
-        readfile($filePath);
-        exit;
+        $this->serveFile($item, $userId, 'attachment');
     }
 
     private function update(int $id, int $userId): void
@@ -241,6 +243,10 @@ class ClipboardItemController
         }
 
         $data = json_decode(file_get_contents('php://input'), true);
+
+        if (isset($data['content_text']) && strlen($data['content_text']) > self::MAX_TEXT_LENGTH) {
+            $this->sendError('content_text exceeds max length (4096)', 413);
+        }
         
         if (isset($data['content_text'])) $item->setContentText($data['content_text']);
         if (isset($data['title'])) $item->setTitle($data['title']);
@@ -276,6 +282,44 @@ class ClipboardItemController
         $this->repository->delete($id);
         $this->sendResponse(['message' => 'Item deleted successfully']);
     }
+
+    private function serveFile(
+        ClipboardItem $item,
+        int $userId,
+        string $disposition // 'inline' or 'attachment'
+    ): void {
+        $clipboard = $this->clipboardRepository->findById($item->getClipboardId());
+        if (!$clipboard) {
+            $this->sendError('Clipboard not found', 404);
+            return;
+        }
+    
+        if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
+            $this->sendError('Forbidden', 403);
+            return;
+        }
+    
+        $filePath = __DIR__ . '/../../../' . $item->getFilePath();
+        if (!file_exists($filePath)) {
+            $this->sendError('File not found', 404);
+            return;
+        }
+    
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $filePath);
+        finfo_close($finfo);
+    
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . filesize($filePath));
+        header(
+            'Content-Disposition: ' . $disposition .
+            '; filename="' . $item->getOriginalFilename() . '"'
+        );
+    
+        readfile($filePath);
+        exit;
+    }
+    
 
     private function toArray(ClipboardItem $item): array
     {

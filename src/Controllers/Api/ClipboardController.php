@@ -83,10 +83,10 @@ class ClipboardController
             $userId,
             $data['description'] ?? null,
             $data['is_public'] ?? false,
-            (int)$data['max_subscribers'] ?? null,
-            (int)$data['max_items'] ?? null,
+            $data['max_subscribers'] ?? null,
+            $data['max_items'] ?? null,
             $data['allowed_content_types'] ?? null,
-            (int)$data['default_expiration_minutes'] ?? null
+            $data['default_expiration_minutes'] ?? null
         );
 
         $id = $this->repository->create($clipboard);

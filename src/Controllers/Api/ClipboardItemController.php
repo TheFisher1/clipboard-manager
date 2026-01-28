@@ -115,6 +115,10 @@ class ClipboardItemController
         $data = json_decode(file_get_contents('php://input'), true);
 
         $clipboard = $this->clipboardRepository->findById($clipboardId);
+
+        $max_items = $clipboard->getMaxItems();
+        $count = $this->repository->countByClipboardId($clipboardId);
+
         if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
             $this->sendError('You cannot add items to clipboard thats not yours', 403);
             return;
@@ -128,6 +132,12 @@ class ClipboardItemController
 
         if (isset($data['content_text']) && strlen($data['content_text']) > self::MAX_TEXT_LENGTH) {
             $this->sendError('content_text exceeds max length (4096)', 413);
+            return;
+        }
+
+        if ($max_items !== null && $count === $max_items) {
+            $this->sendError('This clipboard already contains maximum number of items', 409);
+            return;
         }
 
         $item = new ClipboardItem(
@@ -168,6 +178,14 @@ class ClipboardItemController
 
         if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
             $this->sendError('Forbidden', 403);
+            return;
+        }
+
+        $max_items = $clipboard->getMaxItems();
+        $count = $this->repository->countByClipboardId($clipboardId);
+
+        if ($max_items !== null && $count === $max_items) {
+            $this->sendError('This clipboard already contains maximum number of items', 409);
             return;
         }
 

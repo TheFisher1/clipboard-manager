@@ -121,8 +121,8 @@ class ClipboardAPI {
         });
     }
 
-    async deleteItem(clipboardId, itemId) {
-        return this.request(`/clipboards/${clipboardId}/items/${itemId}`, {
+    async deleteItem(itemId) {
+        return this.request(`/items/${itemId}`, {
             method: 'DELETE'
         });
     }

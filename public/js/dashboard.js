@@ -257,20 +257,27 @@ async function loadItems(clipboardId) {
         }
 
         container.innerHTML = items.map(item => `
-            <div class="item-card ${item.content_type}-card">
+            <div class="item-card ${item.content_type}-card" data-id="${item.id}">
                 <div class="item-header">
                     <h4>${escapeHtml(item.title || 'Untitled')}</h4>
+                    <button class="btn-icon btn-delete" onclick="deleteItemHandler(${clipboardId}, ${item.id})">️</button>
+                </div>
+
+                <div class="item-subheader">
                     <span class="type-badge">${item.content_type}</span>
                 </div>
-                
-                ${renderItemPreview(item)} <p class="item-description">${escapeHtml(item.description || '')}</p>
-                
+
+                ${renderItemPreview(item)}
+
+                <p class="item-description">${escapeHtml(item.description || '')}</p>
+
                 <div class="clipboard-meta">
                     <span>Views: ${item.view_count}</span>
                     <span>Created: ${formatDate(item.created_at)}</span>
                 </div>
             </div>
         `).join('');
+
     } catch (error) {
         container.innerHTML = `<div class="error">Failed to load items: ${error.message}</div>`;
     }
@@ -441,5 +448,19 @@ async function handleEditSubmit(event) {
         loadClipboards(); // Refresh
     } catch (error) {
         alert('Update failed: ' + error.message);
+    }
+}
+
+async function deleteItemHandler(clipboardId, itemId) {
+    if (!confirm("Are you sure you want to delete this item?")) return;
+
+    try {
+        await api.deleteItem(itemId);
+
+        // reload items in clipboard
+        await loadItems(clipboardId);
+
+    } catch (error) {
+        alert('Failed to delete item: ' + error.message);
     }
 }

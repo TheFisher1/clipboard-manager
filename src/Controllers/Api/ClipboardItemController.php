@@ -180,7 +180,7 @@ class ClipboardItemController
 
         $item = new ClipboardItem(
             $clipboardId,
-            'file',
+            $_POST['content_type'],
             $userId,
             null,
             'uploads/' . $filename,
@@ -307,7 +307,7 @@ class ClipboardItemController
     
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mime = finfo_file($finfo, $filePath);
-        finfo_close($finfo);
+        // finfo_close($finfo);
     
         header('Content-Type: ' . $mime);
         header('Content-Length: ' . filesize($filePath));

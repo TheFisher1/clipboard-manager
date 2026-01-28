@@ -260,35 +260,6 @@
     border: 1px solid #ddd;
     object-fit: cover;
 }
-/* Item Card Layout Improvements */
-.item-card {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.type-badge {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    background: #e0e0e0;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #666;
-}
-
-/* The Preview Box */
-.item-preview {
-    border-radius: 4px;
-    overflow: hidden;
-    background: #ebebeb;
-    border: 1px solid #ddd;
-}
 
 .image-preview {
     display: inline-block;
@@ -334,15 +305,43 @@
 }
 
 /* Code Preview Specifics */
-.code-preview {
+/* .code-preview {
     padding: 10px;
     background: #2d2d2d;
-    color: #f8f8f2;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.8rem;
     max-height: 100px;
     overflow: hidden;
+} */
+.code-preview {
+    padding: 12px;
+    background: #2d2d2d;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-height: 220px;
+    overflow: auto;
+    border-radius: 4px;
 }
+
+.item-text-preview {
+    width: 100%;
+    max-width: 100%;
+
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #555;
+
+    max-height: 220px;
+    overflow-y: auto;     
+    overflow-x: hidden;   
+
+    white-space: normal;  
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+
 
 /* UPDATE/DELETE */
 .card-header {

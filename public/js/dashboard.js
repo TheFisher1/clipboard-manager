@@ -237,12 +237,12 @@ function renderItemPreview(item) {
         case 'code':
             return `
                 <div class="item-preview code-preview">
-                    <pre><code>${escapeHtml(item.content_text.substring(0, 300))}</code></pre>
+                    <pre><code>${escapeHtml(item.content_text)}</code></pre>
                 </div>`;
                 
         default:
             return item.content_text ? 
-                `<p class="item-text-preview">${escapeHtml(item.content_text.substring(0, 150))}...</p>` : '';
+                `<p class="item-text-preview">${escapeHtml(item.content_text)}...</p>` : '';
     }
 }
 

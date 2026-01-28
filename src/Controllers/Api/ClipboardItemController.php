@@ -118,13 +118,14 @@ class ClipboardItemController
 
         $max_items = $clipboard->getMaxItems();
         $count = $this->repository->countByClipboardId($clipboardId);
+        $allowed_types = $clipboard->getAllowedContentTypes();
 
         if (!$clipboard->isPublic() && $clipboard->getOwnerId() !== $userId) {
             $this->sendError('You cannot add items to clipboard thats not yours', 403);
             return;
         }
 
-        
+
         if (!isset($data['content_type'])) {
             $this->sendError('Missing required fields: content_type', 400);
             return;
@@ -137,6 +138,11 @@ class ClipboardItemController
 
         if ($max_items !== null && $count === $max_items) {
             $this->sendError('This clipboard already contains maximum number of items', 409);
+            return;
+        }
+
+        if ($allowed_types !== null && !in_array($data['content_type'], $allowed_types, true)) {
+            $this->sendError('Invalid content type', 400);
             return;
         }
 
@@ -183,9 +189,15 @@ class ClipboardItemController
 
         $max_items = $clipboard->getMaxItems();
         $count = $this->repository->countByClipboardId($clipboardId);
+        $allowed_types = $clipboard->getAllowedContentTypes();
 
         if ($max_items !== null && $count === $max_items) {
             $this->sendError('This clipboard already contains maximum number of items', 409);
+            return;
+        }
+
+        if ($allowed_types !== null && !in_array($_POST['content_type'], $allowed_types, true)){
+            $this->sendError('Invalid content type', 400);
             return;
         }
 

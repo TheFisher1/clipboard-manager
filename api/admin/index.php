@@ -141,21 +141,6 @@ try {
         exit;
     }
 
-    // SETTINGS ROUTES
-    if (preg_match('#^/settings$#', $path)) {
-        require_once __DIR__ . '/../../src/Controllers/Api/Admin/AdminSettingsController.php';
-        $controller = new AdminSettingsController();
-        $controller->handleRequest($method, null);
-        exit;
-    }
-
-    if (preg_match('#^/settings/([a-zA-Z0-9_-]+)$#', $path, $matches)) {
-        require_once __DIR__ . '/../../src/Controllers/Api/Admin/AdminSettingsController.php';
-        $controller = new AdminSettingsController();
-        $controller->handleRequest($method, $matches[1]);
-        exit;
-    }
-
     // Route not found
     http_response_code(404);
     echo json_encode([
@@ -168,13 +153,16 @@ try {
 
 } catch (Exception $e) {
     error_log('Admin API Error: ' . $e->getMessage());
+    error_log('Stack trace: ' . $e->getTraceAsString());
     http_response_code(500);
     echo json_encode([
         'success' => false,
         'error' => [
             'code' => 'INTERNAL_ERROR',
             'message' => 'An internal error occurred',
-            'details' => $e->getMessage()
+            'details' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
         ]
     ]);
 }

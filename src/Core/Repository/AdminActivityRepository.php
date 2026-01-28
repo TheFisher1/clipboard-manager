@@ -6,42 +6,36 @@ class AdminActivityRepository {
     private $db;
 
     public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = getDB();
     }
 
     public function getActivityLogs($filters = []) {
         $where = [];
         $params = [];
-        $types = '';
 
         if (isset($filters['user_id'])) {
             $where[] = "ca.user_id = ?";
             $params[] = (int)$filters['user_id'];
-            $types .= 'i';
         }
 
         if (isset($filters['clipboard_id'])) {
             $where[] = "ca.clipboard_id = ?";
             $params[] = (int)$filters['clipboard_id'];
-            $types .= 'i';
         }
 
         if (isset($filters['action_type'])) {
             $where[] = "ca.action_type = ?";
             $params[] = $filters['action_type'];
-            $types .= 's';
         }
 
         if (isset($filters['date_from'])) {
             $where[] = "DATE(ca.created_at) >= ?";
             $params[] = $filters['date_from'];
-            $types .= 's';
         }
 
         if (isset($filters['date_to'])) {
             $where[] = "DATE(ca.created_at) <= ?";
             $params[] = $filters['date_to'];
-            $types .= 's';
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -61,17 +55,20 @@ class AdminActivityRepository {
 
         $params[] = $limit;
         $params[] = $offset;
-        $types .= 'ii';
 
         $stmt = $this->db->prepare($sql);
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+        // Bind all params except the last two (limit and offset)
+        $paramCount = count($params);
+        for ($i = 0; $i < $paramCount - 2; $i++) {
+            $stmt->bindValue($i + 1, $params[$i]);
         }
+        // Bind limit and offset as integers
+        $stmt->bindValue($paramCount - 1, $limit, PDO::PARAM_INT);
+        $stmt->bindValue($paramCount, $offset, PDO::PARAM_INT);
         $stmt->execute();
-        $result = $stmt->get_result();
 
         $logs = [];
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if ($row['details']) {
                 $row['details'] = json_decode($row['details'], true);
             }

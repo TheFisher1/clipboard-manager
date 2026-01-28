@@ -152,7 +152,7 @@ class ClipboardItemController
             $data['title'] ?? null,
             $data['description'] ?? null,
             $data['expires_at'] ?? null,
-            $data['is_single_use'] ?? false
+            isset($data['is_single_use']) ? (bool)$data['is_single_use'] : false
         );
 
         $id = $this->repository->create($item);

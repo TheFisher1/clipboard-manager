@@ -9,7 +9,8 @@ class SessionManager {
             ini_set('session.cookie_httponly', 1);
             ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) ? '1' : '0');
             ini_set('session.use_strict_mode', 1);
-            ini_set('session.cookie_samesite', 'Strict');
+            ini_set('session.cookie_samesite', 'Lax');
+            ini_set('session.cookie_path', '/');
             ini_set('session.gc_maxlifetime', self::SESSION_TIMEOUT);
             
             session_start();
@@ -61,7 +62,7 @@ class SessionManager {
     public static function isAdmin(): bool {
         return self::isAuthenticated() && 
                isset($_SESSION['is_admin']) && 
-               $_SESSION['is_admin'] === true;
+               ($_SESSION['is_admin'] === true || $_SESSION['is_admin'] === 1 || $_SESSION['is_admin'] === '1');
     }
     
     public static function getCurrentUserId(): ?int {
@@ -85,7 +86,7 @@ class SessionManager {
         $_SESSION['user_id'] = $userData['id'];
         $_SESSION['user_email'] = $userData['email'];
         $_SESSION['user_name'] = $userData['name'];
-        $_SESSION['is_admin'] = $userData['is_admin'];
+        $_SESSION['is_admin'] = (bool)($userData['is_admin'] ?? false);
         $_SESSION['created_at'] = time();
         $_SESSION['last_activity'] = time();
         

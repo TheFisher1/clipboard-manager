@@ -1,6 +1,6 @@
 <?php
 
-require_once 'src/Services/SessionManager.php';
+require_once __DIR__ . '/../Services/SessionManager.php';
 
 class AuthMiddleware {
     

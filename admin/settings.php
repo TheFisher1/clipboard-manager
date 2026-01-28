@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . "/auth_check.php"; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,12 +14,12 @@
                 <h2>Admin Panel</h2>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="/admin/dashboard.html">Dashboard</a></li>
-                <li><a href="/admin/users.html">Users</a></li>
-                <li><a href="/admin/clipboards.html">Clipboards</a></li>
-                <li><a href="/admin/content.html">Content</a></li>
-                <li><a href="/admin/activity.html">Activity Logs</a></li>
-                <li><a href="/admin/settings.html" class="active">Settings</a></li>
+                <li><a href="/admin/dashboard.php">Dashboard</a></li>
+                <li><a href="/admin/users.php">Users</a></li>
+                <li><a href="/admin/clipboards.php">Clipboards</a></li>
+                <li><a href="/admin/content.php">Content</a></li>
+                <li><a href="/admin/activity.php">Activity Logs</a></li>
+                <li><a href="/admin/settings.php" class="active">Settings</a></li>
                 <li><a href="/public/dashboard.html">Back to App</a></li>
             </ul>
         </nav>

@@ -5,17 +5,14 @@ require_once __DIR__ . '/../src/Services/SessionManager.php';
 
 SessionManager::initializeSession();
 
-// Check if user is authenticated and is admin
+// Check if user is authenticated
 if (!SessionManager::isAuthenticated()) {
-    header('Location: /public/login.html?redirect=/admin');
+    header('Location: /public/login.html?redirect=' . urlencode($_SERVER['REQUEST_URI']));
     exit;
 }
 
+// Check if user is admin
 if (!SessionManager::isAdmin()) {
     header('Location: /public/dashboard.html');
     exit;
 }
-
-// Redirect to dashboard
-header('Location: /admin/dashboard.php');
-exit;

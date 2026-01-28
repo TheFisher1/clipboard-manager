@@ -140,8 +140,8 @@ createClipboardForm.addEventListener('submit', async (e) => {
         description: formData.get('description'),
         is_public: formData.get('is_public') === 'on',
         owner_id: currentUser.id,
-        max_subscribers: formData.get('max-subscribers'),
-        max_items: formData.get('max-items'),
+        max_subscribers: normalizeInt(formData.get('max-subscribers')),
+        max_items: normalizeInt(formData.get('max-items')),
         default_expiration_minutes: getExpirationMinutes(formData.get('expiration')),
         allowed_content_types: allowed_types.length === 0 ? null : allowed_types 
     };
@@ -378,11 +378,15 @@ function formatDate(dateString) {
     return date.toLocaleDateString();
 }
 
+function normalizeInt(value) {
+    return value === '' || value === null ? null : Number(value);
+}
+
 // Hardcoded zashtoto me myrzi sorry
 function getExpirationMinutes(expiration) {
     switch (expiration) {
-        case 'never':
-            return '';
+        case 'Never expires':
+            return null;
         case '1h':
             return 60;
         case '24h':

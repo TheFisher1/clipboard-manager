@@ -25,15 +25,20 @@
 }
 
 .clipboard-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* optional, pushes meta to bottom */
     background: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    height: 100%; /* fill the grid cell */
+    box-sizing: border-box; /* includes padding in height */
 }
+
 
 .clipboard-card:hover {
     transform: translateY(-2px);
@@ -349,4 +354,51 @@
     font-size: 0.8rem;
     max-height: 100px;
     overflow: hidden;
+}
+
+/* UPDATE/DELETE */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.clipboard-card:hover .card-actions {
+    opacity: 1; 
+    pointer-events: auto;
+}
+
+.btn-icon {
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    width: 25px;
+    height: 25px;
+}
+
+.btn-icon:hover {
+    background-color: var(--btn-secondary-hover-color);
+}
+
+.btn-edit {
+    background: var(--pencil-svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.btn-delete {
+    background: var(--trash-svg);
+    background-size: contain;
+    background-repeat: no-repeat;
 }

@@ -160,8 +160,8 @@
                             <div class="form-actions">
                                 <button
                                     type="button"
-                                    class="btn btn-secondary"
-                                    id="cancelBtn"
+                                    class="cancel-btn btn btn-secondary"
+                                    
                                 >
                                     Cancel
                                 </button>
@@ -283,6 +283,53 @@
                                 </form>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Edit clipboard modal -->
+                <div id="editModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <div class="modal-header">
+                            <h2>Edit Clipboard</h2>
+                        </div>
+                        <form id="editClipboardForm" onsubmit="handleEditSubmit(event)" class="modal-body">
+                            <input type="hidden" id="editClipboardId">
+
+                            <div class="form-group">
+                                <label for="editName">Name</label>
+                                <input type="text" id="editName" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editDescription">Description</label>
+                                <textarea id="editDescription" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        id="editIsPublic"
+                                        name="is_public"
+                                    />
+                                    Make this clipboard public
+                                </label>
+                            </div>
+
+                            <div class="form-actions">
+                                <button
+                                    type="button"
+                                    class="cancel-btn btn btn-secondary"
+                                    
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </main>

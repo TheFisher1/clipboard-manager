@@ -7,6 +7,8 @@
 
 :root {
     --clipboard-svg: url("../images/clipboard.svg");
+    --pencil-svg: url("../images/pencil.svg");
+    --trash-svg: url("../images/trashcan.svg");
     --btn-primary-color: #0c5009;
     --btn-primary-hover-color: #13760e;
     --btn-secondary-color: white;

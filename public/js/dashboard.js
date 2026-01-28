@@ -17,11 +17,13 @@ let currentClipboardId = null;
 // Modal management
 const createModal = document.getElementById('createModal');
 const detailsModal = document.getElementById('detailsModal');
+const editModal = document.getElementById('editModal');
+
 const stepperTrack = document.getElementById('stepperTrack');
 const collapsibleContent = document.getElementById('collapsibleContent');
 const collapsibleButton = document.getElementById('collapsibleButton');
 const createBtn = document.getElementById('createClipboardBtn');
-const cancelBtn = document.getElementById('cancelBtn');
+const cancelBtns = document.querySelectorAll('.cancel-btn');
 const closeBtns = document.querySelectorAll('.close');
 
 const createClipboardForm = document.getElementById('createClipboardForm');
@@ -40,14 +42,18 @@ createBtn.addEventListener('click', () => {
     createModal.style.display = 'block';
 });
 
-cancelBtn.addEventListener('click', () => {
-    createModal.style.display = 'none';
+cancelBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        createModal.style.display = 'none';
+        editModal.style.display = 'none';
+    });
 });
 
 closeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         createModal.style.display = 'none';
         detailsModal.style.display = 'none';
+        editModal.style.display = 'none';
         resetCollapsible();
     });
 });
@@ -63,6 +69,10 @@ window.addEventListener('click', (e) => {
         resetCollapsible();
         resetItemForm();
     }
+
+    if (e.target === editModal) {
+        editModal.style.display = 'none';
+    }
 });
 
 document.getElementById('addItemStepBtn').addEventListener('click', () => {
@@ -72,7 +82,6 @@ document.getElementById('addItemStepBtn').addEventListener('click', () => {
 document.getElementById('backToDetails').addEventListener('click', () => {
     stepperTrack.classList.remove('step-2');
 });
-
 
 // Load clipboards
 async function loadClipboards() {
@@ -86,18 +95,27 @@ async function loadClipboards() {
             return;
         }
 
-        container.innerHTML = clipboards.map(clipboard => `
-            <div class="clipboard-card" data-id="${clipboard.id}">
-                <h3>${escapeHtml(clipboard.name)}</h3>
-                <p>${escapeHtml(clipboard.description || 'No description')}</p>
-                <div class="clipboard-meta">
-                    <span class="badge ${clipboard.is_public ? 'badge-public' : 'badge-private'}">
-                        ${clipboard.is_public ? 'Public' : 'Private'}
-                    </span>
-                    <span>Created: ${formatDate(clipboard.created_at)}</span>
-                </div>
+            container.innerHTML = clipboards.map(clipboard => `
+    <div class="clipboard-card" data-id="${clipboard.id}">
+        <div class="card-header">
+            <h3>${escapeHtml(clipboard.name)}</h3>
+            <div class="card-actions">
+                <button onclick="event.stopPropagation(); openEditModal(${JSON.stringify(clipboard).replace(/"/g, '&quot;')})" class="btn-icon btn-edit">️</button>
+                <button onclick="event.stopPropagation(); confirmDelete(${clipboard.id})" class="btn-icon btn-delete">️</button>
             </div>
-        `).join('');
+        </div>
+
+        <p>${escapeHtml(clipboard.description || 'No description')}</p>
+
+        <div class="clipboard-meta">
+            <span class="badge ${clipboard.is_public ? 'badge-public' : 'badge-private'}">
+                ${clipboard.is_public ? 'Public' : 'Private'}
+            </span>
+            <span>Created: ${formatDate(clipboard.created_at)}</span>
+        </div>
+    </div>
+`).join('');
+
 
         // Add click handlers
         document.querySelectorAll('.clipboard-card').forEach(card => {
@@ -386,3 +404,42 @@ typeCheckboxes.forEach(cb => {
 
 // Initialize
 loadClipboards();
+
+// EDITING AND DELETING CLIPBOARDS
+async function confirmDelete(id) {
+    if (confirm('Are you sure you want to delete this clipboard and all its items?')) {
+        try {
+            await api.deleteClipboard(id);
+            loadClipboards(); // Refresh the list
+        } catch (error) {
+            alert('Error deleting: ' + error.message);
+        }
+    }
+}
+
+function openEditModal(clipboard) {
+    document.getElementById('editClipboardId').value = clipboard.id;
+    document.getElementById('editName').value = clipboard.name;
+    document.getElementById('editDescription').value = clipboard.description;
+    document.getElementById('editIsPublic').checked = clipboard.is_public;
+    
+    document.getElementById('editModal').style.display = 'block';
+}
+
+async function handleEditSubmit(event) {
+    event.preventDefault();
+    const id = document.getElementById('editClipboardId').value;
+    const data = {
+        name: document.getElementById('editName').value,
+        description: document.getElementById('editDescription').value,
+        is_public: document.getElementById('editIsPublic').checked
+    };
+
+    try {
+        await api.updateClipboard(id, data);
+        editModal.style.display = 'none';
+        loadClipboards(); // Refresh
+    } catch (error) {
+        alert('Update failed: ' + error.message);
+    }
+}

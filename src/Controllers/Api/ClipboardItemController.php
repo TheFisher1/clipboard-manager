@@ -80,9 +80,9 @@ class ClipboardItemController
         }
 
         $items = $this->repository->findByClipboardId($clipboardId);
-
+        $types = ['file', 'code', 'image'];
         foreach($items as $item) {
-            if ($item->getContentType() !== 'file') {
+            if (!in_array($item->getContentType(), $types, true)) {
                 $item->incrementViewCount();
                 $this->clipboardActivityRepository->create(new ClipboardActivity($clipboard->getId(), $userId, 'view', $item->getId()));
                 $this->repository->incrementViewCount($item->getId());

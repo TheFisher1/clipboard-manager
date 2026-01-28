@@ -241,8 +241,8 @@ class ClipboardItem
             'expires_at' => $this->expiresAt,
             'view_count' => $this->viewCount,
             'download_count' => $this->downloadCount,
-            'is_single_use' => $this->isSingleUse,
-            'is_consumed' => $this->isConsumed,
+            'is_single_use' => $this->isSingleUse ? 1 : 0,
+            'is_consumed' => $this->isConsumed ? 1 : 0,
         ];
     }
 }

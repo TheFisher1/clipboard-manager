@@ -16,9 +16,19 @@ class AdminAPI {
 
         try {
             const response = await fetch(url, config);
-            const data = await response.json();
+            const text = await response.text();
+            
+            // Try to parse as JSON
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Invalid JSON response:', text);
+                throw new Error('Server returned invalid JSON: ' + text.substring(0, 200));
+            }
 
             if (!response.ok) {
+                console.error('API Error Response:', data);
                 throw new Error(data.error?.message || 'Request failed');
             }
 
@@ -27,6 +37,37 @@ class AdminAPI {
             console.error('API Error:', error);
             throw error;
         }
+    }
+
+    // Generic HTTP methods
+    async get(url) {
+        // If URL starts with /api/admin, remove the baseURL prefix
+        const endpoint = url.startsWith('/api/admin') ? url.replace('/api/admin', '') : url;
+        return this.request(endpoint, { method: 'GET' });
+    }
+
+    async post(url, data) {
+        const endpoint = url.startsWith('/api/admin') ? url.replace('/api/admin', '') : url;
+        return this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async put(url, data) {
+        const endpoint = url.startsWith('/api/admin') ? url.replace('/api/admin', '') : url;
+        return this.request(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async delete(url, data = null) {
+        const endpoint = url.startsWith('/api/admin') ? url.replace('/api/admin', '') : url;
+        return this.request(endpoint, {
+            method: 'DELETE',
+            body: data ? JSON.stringify(data) : undefined
+        });
     }
 
     async getUsers(params = {}) {

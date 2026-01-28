@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../../../../config/config.php';
 require_once __DIR__ . '/../../../Services/AdminAuditService.php';
 require_once __DIR__ . '/../../../Services/SessionManager.php';
 require_once __DIR__ . '/../../../Helpers/Response.php';
@@ -10,7 +10,7 @@ class AdminSettingsController {
     private $auditService;
 
     public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = getDB();
         $this->auditService = new AdminAuditService();
     }
 
@@ -37,10 +37,9 @@ class AdminSettingsController {
 
     private function getAllSettings() {
         $stmt = $this->db->query("SELECT * FROM system_settings ORDER BY category, setting_key");
-        $result = $stmt->get_result();
         
         $settings = [];
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $row['is_public'] = (bool)$row['is_public'];
             $settings[] = $row;
         }
@@ -50,9 +49,8 @@ class AdminSettingsController {
 
     private function getSetting($settingKey) {
         $stmt = $this->db->prepare("SELECT * FROM system_settings WHERE setting_key = ?");
-        $stmt->bind_param('s', $settingKey);
-        $stmt->execute();
-        $setting = $stmt->get_result()->fetch_assoc();
+        $stmt->execute([$settingKey]);
+        $setting = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$setting) {
             http_response_code(404);
@@ -75,9 +73,8 @@ class AdminSettingsController {
 
         // Get old value for audit
         $stmt = $this->db->prepare("SELECT setting_value FROM system_settings WHERE setting_key = ?");
-        $stmt->bind_param('s', $settingKey);
-        $stmt->execute();
-        $oldSetting = $stmt->get_result()->fetch_assoc();
+        $stmt->execute([$settingKey]);
+        $oldSetting = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $stmt = $this->db->prepare("
             UPDATE system_settings 
@@ -85,8 +82,7 @@ class AdminSettingsController {
             WHERE setting_key = ?
         ");
         $userId = SessionManager::getCurrentUserId();
-        $stmt->bind_param('sis', $data['setting_value'], $userId, $settingKey);
-        $success = $stmt->execute();
+        $success = $stmt->execute([$data['setting_value'], $userId, $settingKey]);
 
         if ($success) {
             $this->auditService->logAction(

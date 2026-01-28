@@ -6,7 +6,7 @@ class AdminClipboardRepository {
     private $db;
 
     public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = getDB();
     }
 
     public function getAllClipboards($page = 1, $perPage = 25, $search = null, $filters = []) {
@@ -16,25 +16,21 @@ class AdminClipboardRepository {
 
         $where = [];
         $params = [];
-        $types = '';
 
         if ($search) {
             $where[] = "(c.name LIKE ? OR c.description LIKE ?)";
             $params[] = "%$search%";
             $params[] = "%$search%";
-            $types .= 'ss';
         }
 
         if (isset($filters['is_public'])) {
             $where[] = "c.is_public = ?";
             $params[] = (int)$filters['is_public'];
-            $types .= 'i';
         }
 
         if (isset($filters['owner_id'])) {
             $where[] = "c.owner_id = ?";
             $params[] = (int)$filters['owner_id'];
-            $types .= 'i';
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -43,10 +39,11 @@ class AdminClipboardRepository {
         $countSql = "SELECT COUNT(*) as total FROM clipboards c $whereClause";
         $stmt = $this->db->prepare($countSql);
         if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+            $stmt->execute($params);
+        } else {
+            $stmt->execute();
         }
-        $stmt->execute();
-        $total = (int)$stmt->get_result()->fetch_assoc()['total'];
+        $total = (int)$stmt->fetchColumn();
 
         // Get clipboards
         $sql = "
@@ -62,17 +59,21 @@ class AdminClipboardRepository {
         
         $params[] = $perPage;
         $params[] = $offset;
-        $types .= 'ii';
 
         $stmt = $this->db->prepare($sql);
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+        // Bind all params except the last two (limit and offset)
+        $paramCount = count($params);
+        for ($i = 0; $i < $paramCount - 2; $i++) {
+            $stmt->bindValue($i + 1, $params[$i]);
         }
+        // Bind limit and offset as integers
+        $stmt->bindValue($paramCount - 1, $perPage, PDO::PARAM_INT);
+        $stmt->bindValue($paramCount, $offset, PDO::PARAM_INT);
         $stmt->execute();
-        $result = $stmt->get_result();
-
+        
         $clipboards = [];
-        while ($row = $result->fetch_assoc()) {
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if ($row['allowed_content_types']) {
                 $row['allowed_content_types'] = json_decode($row['allowed_content_types'], true);
             }
@@ -98,9 +99,8 @@ class AdminClipboardRepository {
             LEFT JOIN users u ON c.owner_id = u.id
             WHERE c.id = ?
         ");
-        $stmt->bind_param('i', $clipboardId);
-        $stmt->execute();
-        $clipboard = $stmt->get_result()->fetch_assoc();
+        $stmt->execute([$clipboardId]);
+        $clipboard = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$clipboard) {
             return null;
@@ -118,11 +118,9 @@ class AdminClipboardRepository {
             LEFT JOIN users u ON cs.user_id = u.id
             WHERE cs.clipboard_id = ?
         ");
-        $stmt->bind_param('i', $clipboardId);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$clipboardId]);
         $clipboard['subscribers'] = [];
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $row['email_notifications'] = (bool)$row['email_notifications'];
             $clipboard['subscribers'][] = $row;
         }
@@ -136,11 +134,9 @@ class AdminClipboardRepository {
             ORDER BY ci.created_at DESC
             LIMIT 10
         ");
-        $stmt->bind_param('i', $clipboardId);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$clipboardId]);
         $clipboard['recent_items'] = [];
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $clipboard['recent_items'][] = $row;
         }
 
@@ -151,17 +147,14 @@ class AdminClipboardRepository {
         $allowedFields = ['name', 'description', 'is_public', 'max_subscribers', 'max_items', 'allowed_content_types', 'default_expiration_minutes'];
         $updates = [];
         $params = [];
-        $types = '';
 
         foreach ($data as $field => $value) {
             if (in_array($field, $allowedFields)) {
                 $updates[] = "$field = ?";
                 if ($field === 'allowed_content_types' && is_array($value)) {
                     $params[] = json_encode($value);
-                    $types .= 's';
                 } else {
                     $params[] = $value;
-                    $types .= is_int($value) ? 'i' : 's';
                 }
             }
         }
@@ -171,23 +164,19 @@ class AdminClipboardRepository {
         }
 
         $params[] = $clipboardId;
-        $types .= 'i';
 
         $sql = "UPDATE clipboards SET " . implode(', ', $updates) . " WHERE id = ?";
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param($types, ...$params);
-        return $stmt->execute();
+        return $stmt->execute($params);
     }
 
     public function deleteClipboard($clipboardId) {
         $stmt = $this->db->prepare("DELETE FROM clipboards WHERE id = ?");
-        $stmt->bind_param('i', $clipboardId);
-        return $stmt->execute();
+        return $stmt->execute([$clipboardId]);
     }
 
     public function transferOwnership($clipboardId, $newOwnerId) {
         $stmt = $this->db->prepare("UPDATE clipboards SET owner_id = ? WHERE id = ?");
-        $stmt->bind_param('ii', $newOwnerId, $clipboardId);
-        return $stmt->execute();
+        return $stmt->execute([$newOwnerId, $clipboardId]);
     }
 }

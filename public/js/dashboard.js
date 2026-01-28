@@ -135,14 +135,18 @@ createClipboardForm.addEventListener('submit', async (e) => {
     
     const formData = new FormData(e.target);
     const allowed_types = formData.getAll('allowed_types');
+    const maxSubscribers = formData.get('max-subscribers');
+    const maxItems = formData.get('max-items');
+    const expiration = formData.get('expiration');
+    
     const data = {
         name: formData.get('name'),
-        description: formData.get('description'),
+        description: formData.get('description') || null,
         is_public: formData.get('is_public') === 'on',
         owner_id: currentUser.id,
-        max_subscribers: formData.get('max-subscribers'),
-        max_items: formData.get('max-items'),
-        default_expiration_minutes: getExpirationMinutes(formData.get('expiration')),
+        max_subscribers: maxSubscribers ? parseInt(maxSubscribers) : null,
+        max_items: maxItems ? parseInt(maxItems) : null,
+        default_expiration_minutes: expiration && expiration !== 'never' ? getExpirationMinutes(expiration) : null,
         allowed_content_types: allowed_types.length === 0 ? null : allowed_types 
     };
 
@@ -382,7 +386,7 @@ function formatDate(dateString) {
 function getExpirationMinutes(expiration) {
     switch (expiration) {
         case 'never':
-            return '';
+            return null;
         case '1h':
             return 60;
         case '24h':
@@ -391,6 +395,8 @@ function getExpirationMinutes(expiration) {
             return 7 * 24 * 60;
         case '30d':
             return 30 * 24 * 60;
+        default:
+            return null;
     }
 }
 

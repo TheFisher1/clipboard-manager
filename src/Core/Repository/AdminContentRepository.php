@@ -6,7 +6,7 @@ class AdminContentRepository {
     private $db;
 
     public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = getDB();
     }
 
     public function getAllContent($page = 1, $perPage = 25, $filters = []) {
@@ -16,30 +16,25 @@ class AdminContentRepository {
 
         $where = [];
         $params = [];
-        $types = '';
 
         if (isset($filters['content_type'])) {
             $where[] = "ci.content_type = ?";
             $params[] = $filters['content_type'];
-            $types .= 's';
         }
 
         if (isset($filters['clipboard_id'])) {
             $where[] = "ci.clipboard_id = ?";
             $params[] = (int)$filters['clipboard_id'];
-            $types .= 'i';
         }
 
         if (isset($filters['date_from'])) {
             $where[] = "DATE(ci.created_at) >= ?";
             $params[] = $filters['date_from'];
-            $types .= 's';
         }
 
         if (isset($filters['date_to'])) {
             $where[] = "DATE(ci.created_at) <= ?";
             $params[] = $filters['date_to'];
-            $types .= 's';
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -48,10 +43,11 @@ class AdminContentRepository {
         $countSql = "SELECT COUNT(*) as total FROM clipboard_items ci $whereClause";
         $stmt = $this->db->prepare($countSql);
         if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+            $stmt->execute($params);
+        } else {
+            $stmt->execute();
         }
-        $stmt->execute();
-        $total = (int)$stmt->get_result()->fetch_assoc()['total'];
+        $total = (int)$stmt->fetchColumn();
 
         // Get content
         $sql = "
@@ -66,17 +62,20 @@ class AdminContentRepository {
         
         $params[] = $perPage;
         $params[] = $offset;
-        $types .= 'ii';
 
         $stmt = $this->db->prepare($sql);
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+        // Bind all params except the last two (limit and offset)
+        $paramCount = count($params);
+        for ($i = 0; $i < $paramCount - 2; $i++) {
+            $stmt->bindValue($i + 1, $params[$i]);
         }
+        // Bind limit and offset as integers
+        $stmt->bindValue($paramCount - 1, $perPage, PDO::PARAM_INT);
+        $stmt->bindValue($paramCount, $offset, PDO::PARAM_INT);
         $stmt->execute();
-        $result = $stmt->get_result();
 
         $content = [];
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $row['is_single_use'] = (bool)$row['is_single_use'];
             $row['is_consumed'] = (bool)$row['is_consumed'];
             $content[] = $row;
@@ -101,9 +100,8 @@ class AdminContentRepository {
             LEFT JOIN users u ON ci.submitted_by = u.id
             WHERE ci.id = ?
         ");
-        $stmt->bind_param('i', $contentId);
-        $stmt->execute();
-        $content = $stmt->get_result()->fetch_assoc();
+        $stmt->execute([$contentId]);
+        $content = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($content) {
             $content['is_single_use'] = (bool)$content['is_single_use'];
@@ -115,8 +113,7 @@ class AdminContentRepository {
 
     public function deleteContent($contentId) {
         $stmt = $this->db->prepare("DELETE FROM clipboard_items WHERE id = ?");
-        $stmt->bind_param('i', $contentId);
-        return $stmt->execute();
+        return $stmt->execute([$contentId]);
     }
 
     public function bulkDeleteContent($contentIds) {
@@ -128,9 +125,6 @@ class AdminContentRepository {
         $sql = "DELETE FROM clipboard_items WHERE id IN ($placeholders)";
         $stmt = $this->db->prepare($sql);
         
-        $types = str_repeat('i', count($contentIds));
-        $stmt->bind_param($types, ...$contentIds);
-        
-        return $stmt->execute();
+        return $stmt->execute($contentIds);
     }
 }

@@ -196,7 +196,7 @@ class ClipboardItemController
             return;
         }
 
-        if ($allowed_types !== null && !in_array('file', $allowed_types, true) && !in_array($_POST['content_type'], $allowed_types, true)){
+        if ($allowed_types !== null && !in_array($_POST['content_type'], $allowed_types, true)){
             $this->sendError('Invalid content type', 400);
             return;
         }

@@ -30,6 +30,15 @@ if (preg_match('#^/auth/(login|register|logout|me)$#', $path, $matches)) {
     exit;
 }
 
+if (preg_match('#^/users/(\d+)$#', $path, $matches) && $method === 'GET') {
+    require_once __DIR__ . '/../src/Controllers/Api/UserController.php';
+    $controller = new UserController();
+
+    $userId = (int)$matches[1];
+    $controller->getById($userId);
+    exit;
+}
+
 SessionManager::initializeSession();
 if (!SessionManager::isAuthenticated()) {
     http_response_code(401);

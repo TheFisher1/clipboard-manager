@@ -96,6 +96,16 @@ class ClipboardItemRepository
         return array_map(fn($row) => ClipboardItem::fromDatabase($row), $rows);
     }
 
+    public function countByClipboardId(int $clipboardId): int
+    {
+        $stmt = $this->db->prepare(
+            "SELECT Count(*) as count FROM clipboard_items WHERE clipboard_id = :clipboard_id"
+        );
+        $stmt->execute([':clipboard_id' => $clipboardId]);
+
+        return (int)$stmt->fetchColumn();
+    }
+
     public function update(ClipboardItem $item): bool
     {
         if ($item->getId() === null) {

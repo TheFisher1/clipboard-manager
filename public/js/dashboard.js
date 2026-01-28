@@ -278,6 +278,10 @@ async function loadItems(clipboardId) {
             </div>
         `).join('');
 
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightElement(block);
+        });
+
     } catch (error) {
         container.innerHTML = `<div class="error">Failed to load items: ${error.message}</div>`;
     }

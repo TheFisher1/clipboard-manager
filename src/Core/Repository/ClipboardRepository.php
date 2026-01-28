@@ -151,4 +151,31 @@ class ClipboardRepository
         return $stmt->rowCount();
     }
 
+    public function searchVisible(string $keywords, int $userId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT *,
+                MATCH(name, description) AGAINST (:keywords) AS relevance
+            FROM clipboards
+            WHERE (
+                is_public = TRUE
+                OR owner_id = :owner_id
+            )
+            AND MATCH(name, description)
+                AGAINST (:keywords)
+            ORDER BY relevance DESC
+        ");
+
+        $stmt->execute([
+            ':keywords' => $keywords,
+            ':owner_id' => $userId
+        ]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(
+            fn($row) => Clipboard::fromDatabase($row),
+            $rows
+        );
+    }
 }

@@ -17,21 +17,28 @@ class ClipboardController
         try {
             switch ($method) {
                 case 'GET':
-                    if ($subroute === 'mine') {
+                    if ($subroute !== null && str_starts_with($subroute, 'search:')) {
+                        $keywords = substr($subroute, strlen('search:'));
+                        $this->search($userId, $keywords);
+                    } elseif ($subroute === 'mine') {
                         $this->getMine($userId);
                     } else {
                         $id ? $this->getOne((int)$id, $userId) : $this->getAll($userId);
                     }
                     break;
+
                 case 'POST':
                     $this->create($userId);
                     break;
+
                 case 'PUT':
                     $this->update((int)$id, $userId);
                     break;
+
                 case 'DELETE':
                     $this->delete((int)$id, $userId);
                     break;
+
                 default:
                     $this->sendError('Method not allowed', 405);
             }
@@ -39,6 +46,7 @@ class ClipboardController
             $this->sendError($e->getMessage(), 500);
         }
     }
+
 
     private function getAll(int $userId): void
     {
@@ -140,6 +148,19 @@ class ClipboardController
         $this->sendResponse(['message' => 'Clipboard deleted successfully']);
     }
 
+    private function search(int $userId, string $keywords): void
+    {
+        $keywords = trim(urldecode($keywords));
+
+        if ($keywords === '') {
+            $this->sendError('Missing search keywords', 400);
+            return;
+        }
+
+        $clipboards = $this->repository->searchVisible($keywords, $userId);
+
+        $this->sendResponse(array_map(fn($c) => $this->toArray($c), $clipboards));
+    }
     private function toArray(Clipboard $clipboard): array
     {
         return [

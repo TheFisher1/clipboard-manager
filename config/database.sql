@@ -162,5 +162,8 @@ CREATE INDEX idx_clipboard_activity_user ON clipboard_activity(user_id);
 CREATE INDEX idx_clipboard_activity_clipboard ON clipboard_activity(clipboard_id);
 CREATE INDEX idx_clipboard_activity_created ON clipboard_activity(created_at);
 
+ALTER TABLE clipboards
+ADD FULLTEXT INDEX clipboards_search_idx (name, description);
+
 INSERT INTO users (email, password_hash, name, is_admin) VALUES 
 ('admin@test.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', TRUE);

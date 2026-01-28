@@ -6,7 +6,6 @@ class ClipboardAPI {
         const config = {
             credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json',
                 ...options.headers
             },
             ...options
@@ -21,6 +20,27 @@ class ClipboardAPI {
             }
 
             return data;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
+    }
+
+    async requestBlob(endpoint, options = {}) {
+        const url = `${API_BASE_URL}${endpoint}`;
+        const config = {
+            credentials: 'include',
+            ...options
+        };
+
+        try {
+            const response = await fetch(url, config);
+
+            if (!response.ok) {
+                throw new Error(`Request failed: ${response.status}`);
+            }
+
+            return await response.blob();
         } catch (error) {
             console.error('API Error:', error);
             throw error;
@@ -101,10 +121,57 @@ class ClipboardAPI {
         });
     }
 
-    async deleteItem(clipboardId, itemId) {
-        return this.request(`/clipboards/${clipboardId}/items/${itemId}`, {
+    async deleteItem(itemId) {
+        return this.request(`/items/${itemId}`, {
             method: 'DELETE'
         });
+    }
+
+    async createItemFile(clipboardId, data) {
+        return this.request(`/clipboards/${clipboardId}/items/file`, {
+            method: 'POST',
+            body: data,
+        });
+    }
+
+    async getItemBlob(itemId, endpoint = 'view') {
+        const res = await fetch(
+            `${API_BASE_URL}items/${itemId}/${endpoint}`,
+            { credentials: 'include' }
+        );
+
+        if (!res.ok) {
+            throw new Error('Failed to fetch file');
+        }
+
+        return await res.blob();
+    }
+
+    async viewItemFile(itemId) {
+        const blob = await this.requestBlob(`/items/${itemId}/view`);
+        const url = URL.createObjectURL(blob);
+
+        window.open(url, '_blank');
+    }
+
+    async downloadItemFile(itemId) {
+        const blob = await this.requestBlob(`/items/${itemId}/download`);
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    getFileViewUrl(itemId) {
+        return `${API_BASE_URL}/items/${itemId}/view`;
+    }
+
+    getFileDownloadUrl(itemId) {
+        return `${API_BASE_URL}/items/${itemId}/download`;
     }
 }
 

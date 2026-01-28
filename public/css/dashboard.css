@@ -221,3 +221,132 @@
     font-size: 14px;
     color: #7f8c8d;
 }
+
+/* =============== */
+
+/* Item Card Layout Improvements */
+.item-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.type-badge {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    background: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #666;
+}
+
+/* The Preview Box */
+.item-preview {
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #ebebeb;
+    border: 1px solid #ddd;
+    object-fit: cover;
+}
+/* Item Card Layout Improvements */
+.item-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.type-badge {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    background: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #666;
+}
+
+/* The Preview Box */
+.item-preview {
+    border-radius: 4px;
+    overflow: hidden;
+    background: #ebebeb;
+    border: 1px solid #ddd;
+}
+
+.image-preview {
+    display: inline-block;
+    max-width: 200px;
+    width: auto;
+}
+
+/* Image Specifics */
+.image-preview img {
+    display: block;
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: contain;
+    cursor: zoom-in;
+}
+/* .image-preview img {
+    width: 100%;
+    height: 180px;
+    display: block;
+    cursor: zoom-in;
+    transition: opacity 0.2s;
+    object-fit: contain;
+    max-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+} */
+
+.image-preview img:hover {
+    opacity: 0.9;
+}
+
+/* File Specifics */
+.file-preview {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f1f1;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.file-name {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--btn-primary-color);
+}
+
+/* Code Preview Specifics */
+.code-preview {
+    padding: 10px;
+    background: #2d2d2d;
+    color: #f8f8f2;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    max-height: 100px;
+    overflow: hidden;
+}

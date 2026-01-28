@@ -189,28 +189,68 @@ function resetItemForm() {
     itemTypeFields.innerHTML = getTypeFields(itemTypeSelect.value);
 }
 
-// Load items
+function renderItemPreview(item) {
+    // Construct the dynamic URL for your viewFile endpoint
+    switch (item.content_type) {
+        case 'image':
+            return `
+                <div class="item-preview image-preview">
+                    <img src="${api.getFileViewUrl(item.id)}" 
+                         alt="${escapeHtml(item.title)}" 
+                         loading="lazy" 
+                         onclick="window.open('${api.getFileViewUrl(item.id)}', '_blank')">
+                </div>`;
+                
+        case 'file':
+            return `
+                <div class="item-preview file-preview">
+                    <div class="file-info">
+                        <span class="file-icon">📁</span>
+                        <div class="file-details">
+                            <span class="file-name">${escapeHtml(item.file_name || 'Download File')}</span>
+                            <span class="file-size">${(item.file_size / 1024).toFixed(1)} KB</span>
+                        </div>
+                    </div>
+                    <a href="${api.getFileViewUrl(item.id)}" download="${item.file_name}" class="btn btn-sm btn-secondary">
+                        Download
+                    </a>
+                </div>`;
+                
+        case 'code':
+            return `
+                <div class="item-preview code-preview">
+                    <pre><code>${escapeHtml(item.content_text.substring(0, 300))}</code></pre>
+                </div>`;
+                
+        default:
+            return item.content_text ? 
+                `<p class="item-text-preview">${escapeHtml(item.content_text.substring(0, 150))}...</p>` : '';
+    }
+}
+
+// Update the loadItems mapping logic
 async function loadItems(clipboardId) {
     const container = document.getElementById('itemsList');
-    
     try {
         const items = await api.getClipboardItems(clipboardId);
-        
         if (items.length === 0) {
             container.innerHTML = '<p class="loading">No items yet.</p>';
             return;
         }
 
         container.innerHTML = items.map(item => `
-            <div class="item-card">
-                <h4>${escapeHtml(item.title || 'Untitled')}</h4>
-                <p><strong>Type:</strong> ${item.content_type}</p>
-                ${item.content_text ? `<p>${escapeHtml(item.content_text.substring(0, 100))}...</p>` : ''}
-                ${item.url ? `<p><a href="${escapeHtml(item.url)}" target="_blank">Open Link</a></p>` : ''}
-                <p class="clipboard-meta">
+            <div class="item-card ${item.content_type}-card">
+                <div class="item-header">
+                    <h4>${escapeHtml(item.title || 'Untitled')}</h4>
+                    <span class="type-badge">${item.content_type}</span>
+                </div>
+                
+                ${renderItemPreview(item)} <p class="item-description">${escapeHtml(item.description || '')}</p>
+                
+                <div class="clipboard-meta">
                     <span>Views: ${item.view_count}</span>
                     <span>Created: ${formatDate(item.created_at)}</span>
-                </p>
+                </div>
             </div>
         `).join('');
     } catch (error) {
@@ -218,24 +258,42 @@ async function loadItems(clipboardId) {
     }
 }
 
-// Create item form
 createItemForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
-    const data = {
-        title: formData.get('name'),
-        description: formData.get('description'),
-        content_type: itemTypeSelect.value,
-        submitted_by: currentUser.id,
-        content_text: formData.get('content-text'),
-    };
+    const rawFormData = new FormData(e.target);
+    const contentType = itemTypeSelect.value;
 
     try {
-        await api.createItem(currentClipboardId, data);
+        if (contentType === 'image' || contentType === 'file') {
+
+            const filePayload = new FormData();
+            
+            filePayload.append('title', rawFormData.get('name'));
+            filePayload.append('description', rawFormData.get('description'));
+            filePayload.append('content_type', contentType);
+            filePayload.append('submitted_by', currentUser.id);
+            filePayload.append('file', rawFormData.get('file'));
+
+            await api.createItemFile(currentClipboardId, filePayload);
+
+        } else {
+
+            const jsonPayload = {
+                title: rawFormData.get('name'),
+                description: rawFormData.get('description'),
+                content_type: contentType,
+                submitted_by: currentUser.id,
+                content_text: rawFormData.get('content-text')
+            };
+
+            await api.createItem(currentClipboardId, jsonPayload);
+        }
+
         e.target.reset();
         await loadItems(currentClipboardId);
         stepperTrack.classList.remove('step-2');
+
     } catch (error) {
         alert('Failed to add item: ' + error.message);
     }

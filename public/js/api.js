@@ -1,4 +1,20 @@
-const API_BASE_URL = '/api';
+// Detect base path from current location
+const BASE_PATH = (() => {
+    const path = window.location.pathname;
+    // If we're in /clipboard/public/something, base is /clipboard
+    const match = path.match(/^(\/[^\/]+)?\/public\//);
+    if (match) {
+        return match[1] || '';
+    }
+    // If we're in /clipboard/something, base is /clipboard
+    const parts = path.split('/');
+    if (parts.length > 2 && parts[1]) {
+        return '/' + parts[1];
+    }
+    return '';
+})();
+
+const API_BASE_URL = BASE_PATH + '/api';
 
 class ClipboardAPI {
     async request(endpoint, options = {}) {

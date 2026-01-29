@@ -49,10 +49,18 @@ if (strpos($path, '/api') === 0) {
 // ============================================
 // ROUTE: Admin Panel PHP Files
 // ============================================
-if (strpos($path, '/admin/') === 0) {
+if (strpos($path, '/admin/') === 0 || strpos($path, '/admin') === 0) {
+    // Handle /admin or /admin/ -> redirect to /admin/dashboard.php
+    if ($path === '/admin' || $path === '/admin/') {
+        if (file_exists(__DIR__ . '/admin/dashboard.php')) {
+            require_once __DIR__ . '/admin/dashboard.php';
+            exit;
+        }
+    }
+    
     $adminFile = __DIR__ . $path;
     
-    // Check if it's a PHP file
+    // Check if it's a file that exists
     if (file_exists($adminFile) && is_file($adminFile)) {
         $ext = pathinfo($adminFile, PATHINFO_EXTENSION);
         
@@ -63,12 +71,6 @@ if (strpos($path, '/admin/') === 0) {
         
         // Serve other admin files (CSS, JS, images)
         serveStaticFile($adminFile);
-        exit;
-    }
-    
-    // If admin/index.php exists and path is just /admin or /admin/
-    if (($path === '/admin' || $path === '/admin/') && file_exists(__DIR__ . '/admin/index.php')) {
-        require_once __DIR__ . '/admin/index.php';
         exit;
     }
 }

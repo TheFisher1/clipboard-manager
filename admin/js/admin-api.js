@@ -1,6 +1,8 @@
 class AdminAPI {
     constructor() {
-        this.baseURL = '/api/admin';
+        // Use BASE_PATH if available, otherwise default to /api/admin
+        const basePath = window.BASE_PATH || '';
+        this.baseURL = basePath + '/api/admin';
     }
 
     async request(endpoint, options = {}) {
@@ -210,8 +212,9 @@ function showError(element, message) {
 }
 
 function logout() {
-    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    const basePath = window.BASE_PATH || '';
+    fetch(basePath + '/api/auth/logout', { method: 'POST', credentials: 'include' })
         .then(() => {
-            window.location.href = '/public/login.html';
+            window.location.href = basePath + '/public/login.html';
         });
 }

@@ -1,5 +1,5 @@
 <?php
-
+// jsnka
 class Clipboard
 {
     private ?int $id;

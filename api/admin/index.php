@@ -33,18 +33,27 @@ if (!AuthMiddleware::checkAdmin()) {
     exit;
 }
 
-// Get the request path and normalize it
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+// Get the request path
+$requestUri = $_SERVER['REQUEST_URI'];
+$path = parse_url($requestUri, PHP_URL_PATH);
 
-// Remove script name from path if present (for XAMPP compatibility)
-$scriptName = dirname(dirname($_SERVER['SCRIPT_NAME']));
-if ($scriptName !== '/' && strpos($requestUri, $scriptName) === 0) {
-    $requestUri = substr($requestUri, strlen($scriptName));
+// Remove base directory if in subdirectory
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$baseDir = str_replace('\\', '/', dirname(dirname(dirname($scriptName))));
+$baseDir = rtrim($baseDir, '/');
+
+if ($baseDir && $baseDir !== '/' && strpos($path, $baseDir) === 0) {
+    $path = substr($path, strlen($baseDir));
 }
 
-// Remove /api/admin prefix to get the actual route
-$path = preg_replace('#^/api/admin#', '', $requestUri);
+// Remove /api/admin prefix and normalize
+$path = preg_replace('#^/api/admin/?#', '/', $path);
 $path = '/' . trim($path, '/');
+
+// If path is empty, set to /
+if ($path === '/') {
+    $path = '/';
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 

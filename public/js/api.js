@@ -71,8 +71,20 @@ class ClipboardAPI {
         return this.request('/auth/me');
     }
 
+    async getUserById(id) {
+        return this.request(`/users/${id}`);
+    }
+
     async getClipboards() {
         return this.request('/clipboards');
+    }
+
+    async getMyClipboards() {
+        return this.request('/clipboards/mine');
+    }
+
+    async searchClipboards(keywordString) {
+        return this.request(`/clipboards/search/${keywordString}`);
     }
 
     async getClipboard(id) {

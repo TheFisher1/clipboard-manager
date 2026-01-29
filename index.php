@@ -213,17 +213,24 @@ exit;
  * Helper function to serve static files with proper MIME types
  */
 function serveStaticFile($filePath) {
+    if (!file_exists($filePath) || !is_file($filePath)) {
+        http_response_code(404);
+        header('Content-Type: text/plain');
+        echo "File not found: " . basename($filePath);
+        return;
+    }
+    
     $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
     
     $mimeTypes = [
         // Text
-        'html' => 'text/html',
-        'htm' => 'text/html',
-        'css' => 'text/css',
-        'js' => 'application/javascript',
+        'html' => 'text/html; charset=utf-8',
+        'htm' => 'text/html; charset=utf-8',
+        'css' => 'text/css; charset=utf-8',
+        'js' => 'application/javascript; charset=utf-8',
         'json' => 'application/json',
         'xml' => 'application/xml',
-        'txt' => 'text/plain',
+        'txt' => 'text/plain; charset=utf-8',
         
         // Images
         'png' => 'image/png',

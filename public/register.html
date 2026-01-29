@@ -97,7 +97,8 @@
                 e.target.reset();
                 
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    const basePath = window.APP_BASE_PATH || '';
+                    window.location.href = basePath + '/public/login.html';
                 }, 2000);
             } catch (error) {
                 errorDiv.textContent = error.message;

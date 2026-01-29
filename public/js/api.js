@@ -7,6 +7,7 @@ class ClipboardAPI {
         const config = {
             credentials: 'same-origin',
             headers: {
+                'Content-Type': 'application/json',
                 ...options.headers
             },
             ...options
@@ -155,7 +156,7 @@ class ClipboardAPI {
         window.open(url, '_blank');
     }
 
-    async downloadItemFile(itemId) {
+    async downloadItemFile(itemId, filename = 'download') {
         const blob = await this.requestBlob(`/items/${itemId}/download`);
         const url = URL.createObjectURL(blob);
         

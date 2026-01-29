@@ -88,7 +88,7 @@ async function loadClipboards() {
     const container = document.getElementById('clipboardsList');
     
     try {
-        const clipboards = await api.getClipboards();
+        const clipboards = await api.getMyClipboards();
         
         if (clipboards.length === 0) {
             container.innerHTML = '<p class="loading">No clipboards yet. Create one to get started!</p>';
@@ -169,7 +169,7 @@ async function showClipboardDetails(id) {
         document.getElementById('clipboardName').textContent = clipboard.name;
         document.getElementById('clipboardDescription').textContent = 
             clipboard.description || 'No description';
-        createCollapsible(clipboard);
+        await createCollapsible(clipboard);
         
         await loadItems(id);
         
@@ -179,12 +179,16 @@ async function showClipboardDetails(id) {
     }
 }
 
-function createCollapsible(clipboard) {
+async function createCollapsible(clipboard) {
     const allowedContentString = clipboard['allowed_content_types']?.join(', ') ?? null;
     const expiration = clipboard['default_expiration_minutes'] ?? null;
 
+    // TODO!!
+    const creator = await api.getUserById(clipboard['owner_id']) ?? null;
+    const creatorName = creator.name;
+
     collapsibleContent.textContent = 
-        `Created by: ${clipboard['owner_id']} (TODO: change to username)\n` +
+        `Created by: ${creatorName}\n` +
         `Allowed content: ${allowedContentString === null ? 'All content types' : allowedContentString}\n` +
         `Created: ${clipboard['created_at']}\n` +
         `Expires: ${expiration === null ? 'Never' : expiration}\n` +

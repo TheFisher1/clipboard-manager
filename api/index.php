@@ -142,6 +142,14 @@ if (preg_match('#^/items/(\d+)$#', $path, $matches)) {
     exit;
 }
 
+if (preg_match('#^/clipboards/search/(.+)$#', $path, $matches) && $method === 'GET') {
+    require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
+    $controller = new ClipboardController();
+
+    $controller->handleRequest($method, null, $userId, 'search:' . $matches[1]);
+    exit;
+}
+
 if (preg_match('#^/clipboards(/(\d+))?(/items)?$#', $path, $matches)) {
     require_once __DIR__ . '/../src/Controllers/Api/ClipboardController.php';
     $controller = new ClipboardController();

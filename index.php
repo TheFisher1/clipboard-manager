@@ -92,14 +92,30 @@ foreach ($specialFiles as $file) {
 // ============================================
 // ROUTE: Public Files
 // ============================================
+
+// For paths starting with /public/, serve directly from that folder
+if (strpos($path, '/public/') === 0) {
+    $filePath = __DIR__ . $path;
+    
+    if (file_exists($filePath) && is_file($filePath)) {
+        serveStaticFile($filePath);
+        exit;
+    }
+}
+
+// For root path or paths without /public/ prefix, try serving from public directory
 $publicPath = __DIR__ . '/public';
 
 // Default to index.html for root
 if ($path === '/' || $path === '') {
-    $path = '/index.html';
+    $filePath = $publicPath . '/index.html';
+    if (file_exists($filePath)) {
+        serveStaticFile($filePath);
+        exit;
+    }
 }
 
-// Try to serve from public directory
+// Try to serve from public directory (for relative paths)
 $filePath = $publicPath . $path;
 
 // Security check: ensure the real path is within public directory

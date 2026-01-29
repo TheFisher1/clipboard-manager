@@ -2,7 +2,7 @@
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 if (strpos($path, '/api') === 0) {
-    require_once 'api/index.php';
+    require_once __DIR__ . '/../api/index.php';
     exit;
 }
 

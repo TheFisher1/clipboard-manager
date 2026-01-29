@@ -1,17 +1,9 @@
 RewriteEngine On
 
-# Admin API routes
-RewriteRule ^api/admin/(.*)$ api/admin/index.php [L,QSA]
+# If file or directory exists, serve it
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-# Regular API routes
-RewriteRule ^api/(.*)$ api/index.php [L,QSA]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [L,QSA]
-
-RewriteRule ^config/ - [F,L]
-RewriteRule ^docker/ - [F,L]
-RewriteRule ^src/ - [F,L]
-
-Options -Indexes
+# Otherwise route everything to index.php
+RewriteRule ^ index.php [L]

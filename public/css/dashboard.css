@@ -305,14 +305,6 @@
 }
 
 /* Code Preview Specifics */
-/* .code-preview {
-    padding: 10px;
-    background: #2d2d2d;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.8rem;
-    max-height: 100px;
-    overflow: hidden;
-} */
 .code-preview {
     padding: 12px;
     background: #2d2d2d;
@@ -331,6 +323,7 @@
     font-size: 0.95rem;
     line-height: 1.5;
     color: #555;
+    background: #f1f1f1;
 
     max-height: 220px;
     overflow-y: auto;     

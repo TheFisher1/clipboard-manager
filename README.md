@@ -2,6 +2,8 @@
 
 A client-server clipboard sharing application built with PHP REST API backend and vanilla JavaScript frontend.
 
+> **🚀 XAMPP Ready**: This application is configured to work with XAMPP out of the box. See [XAMPP_SETUP.md](XAMPP_SETUP.md) for setup instructions or run `check_config.php` to verify your configuration.
+
 ## Architecture
 
 ### Server (PHP)
@@ -83,11 +85,27 @@ A client-server clipboard sharing application built with PHP REST API backend an
 
 ## Setup
 
+### Quick Start with XAMPP
+
+1. **Install XAMPP** with Apache and MySQL
+2. **Enable mod_rewrite** in Apache (see [XAMPP_SETUP.md](XAMPP_SETUP.md) for details)
+3. **Copy project** to `C:\xampp\htdocs\clipboard\` (or your htdocs folder)
+4. **Create database** named `clipboard_system` in phpMyAdmin
+5. **Import schema**: Import `config/database.sql` into the database
+6. **Check configuration**: Visit `http://localhost/clipboard/check_config.php`
+7. **Run installer**: Visit `http://localhost/clipboard/install.php` to create admin account
+8. **Access app**: Go to `http://localhost/clipboard/`
+
+For detailed XAMPP setup instructions, see [XAMPP_SETUP.md](XAMPP_SETUP.md)
+
+### Manual Setup (Other Servers)
+
 1. **Database**: Import `config/database.sql`
 2. **Configuration**: Update `config/config.php` with your database credentials
 3. **Web Server**: Point to project root, ensure mod_rewrite is enabled
-4. **Create Account**: Navigate to `/register.html` to create your first user
-5. **Login**: Use `/login.html` to access the dashboard
+4. **Permissions**: Make `uploads/` directory writable
+5. **Create Account**: Navigate to `/register.html` to create your first user
+6. **Login**: Use `/login.html` to access the dashboard
 
 ## Authentication
 

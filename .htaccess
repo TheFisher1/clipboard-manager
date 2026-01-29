@@ -1,17 +1,37 @@
 RewriteEngine On
+RewriteBase /
 
-# Admin API routes
-RewriteRule ^api/admin/(.*)$ api/admin/index.php [L,QSA]
-
-# Regular API routes
-RewriteRule ^api/(.*)$ api/index.php [L,QSA]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [L,QSA]
-
+# Block direct access to sensitive directories
 RewriteRule ^config/ - [F,L]
 RewriteRule ^docker/ - [F,L]
 RewriteRule ^src/ - [F,L]
+RewriteRule ^\.git/ - [F,L]
 
+# Admin API routes - must come before regular API routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/admin/(.*)$ api/admin/index.php [L,QSA]
+
+# Regular API routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ api/index.php [L,QSA]
+
+# Admin panel routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^admin/(.*)$ admin/$1 [L]
+
+# Public files and assets - serve directly if they exist
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Everything else goes to index.php
+RewriteRule ^(.*)$ index.php [L,QSA]
+
+# Disable directory listing
 Options -Indexes
+
+# Set default charset
+AddDefaultCharset UTF-8

@@ -17,8 +17,19 @@ ini_set('display_errors', 1);
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../src/Services/SessionManager.php';
 
-$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = str_replace('/api', '', $path);
+// Get the request path and normalize it
+$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+// Remove script name from path if present (for XAMPP compatibility)
+$scriptName = dirname($_SERVER['SCRIPT_NAME']);
+if ($scriptName !== '/' && strpos($requestUri, $scriptName) === 0) {
+    $requestUri = substr($requestUri, strlen($scriptName));
+}
+
+// Remove /api prefix to get the actual route
+$path = preg_replace('#^/api#', '', $requestUri);
+$path = '/' . trim($path, '/');
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 // AUTH ROUTES

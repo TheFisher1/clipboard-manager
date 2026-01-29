@@ -1,6 +1,11 @@
 // Auth functionality
 let currentUser = null;
 
+// Get base path helper
+function getBasePath() {
+    return window.APP_BASE_PATH || '';
+}
+
 // Check if user is logged in
 async function checkAuth() {
     try {
@@ -17,7 +22,7 @@ async function checkAuth() {
 async function requireAuth() {
     const isAuthenticated = await checkAuth();
     if (!isAuthenticated) {
-        window.location.href = '/login.html';
+        window.location.href = getBasePath() + '/public/login.html';
         return false;
     }
     return true;
@@ -28,6 +33,8 @@ function updateAuthUI() {
     const authLinks = document.querySelector('.auth-links-nav');
     if (!authLinks) return;
     
+    const basePath = getBasePath();
+    
     if (currentUser) {
         authLinks.innerHTML = `
             <span>Welcome, ${escapeHtml(currentUser.name)}</span>
@@ -37,8 +44,8 @@ function updateAuthUI() {
         document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
     } else {
         authLinks.innerHTML = `
-            <a href="/login.html" class="btn btn-sm btn-primary">Login</a>
-            <a href="/register.html" class="btn btn-sm btn-secondary">Register</a>
+            <a href="${basePath}/public/login.html" class="btn btn-sm btn-primary">Login</a>
+            <a href="${basePath}/public/register.html" class="btn btn-sm btn-secondary">Register</a>
         `;
     }
 }
@@ -47,7 +54,7 @@ function updateAuthUI() {
 async function handleLogout() {
     try {
         await api.logout();
-        window.location.href = '/index.html';
+        window.location.href = getBasePath() + '/public/index.html';
     } catch (error) {
         console.error('Logout failed:', error);
         alert('Logout failed. Please try again.');
@@ -73,7 +80,7 @@ if (document.getElementById('loginForm')) {
             currentUser = response.user;
             
             // Redirect to dashboard
-            window.location.href = '/dashboard.html';
+            window.location.href = getBasePath() + '/public/dashboard.html';
         } catch (error) {
             errorDiv.textContent = error.message;
             errorDiv.style.display = 'block';

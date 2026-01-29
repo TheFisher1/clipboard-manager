@@ -1,7 +1,8 @@
 class AdminAPI {
     constructor() {
-        // Always use absolute path from root
-        this.baseURL = '/api/admin';
+        // Use APP_BASE_PATH if available (injected by server)
+        const basePath = window.APP_BASE_PATH || '';
+        this.baseURL = basePath + '/api/admin';
     }
 
     async request(endpoint, options = {}) {
@@ -211,7 +212,7 @@ function showError(element, message) {
 }
 
 function logout() {
-    const basePath = window.BASE_PATH || '';
+    const basePath = window.APP_BASE_PATH || '';
     fetch(basePath + '/api/auth/logout', { method: 'POST', credentials: 'include' })
         .then(() => {
             window.location.href = basePath + '/public/login.html';

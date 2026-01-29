@@ -10,7 +10,8 @@ let currentClipboardId = null;
         loadClipboards();
     } catch (error) {
         // Not authenticated, redirect to login
-        window.location.href = '/login.html';
+        const basePath = window.APP_BASE_PATH || '';
+        window.location.href = basePath + '/public/login.html';
     }
 })();
 

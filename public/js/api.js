@@ -1,5 +1,5 @@
-// API base URL - always use absolute path from root
-const API_BASE_URL = '/api';
+// API base URL - use APP_BASE_PATH if available (injected by server)
+const API_BASE_URL = (window.APP_BASE_PATH || '') + '/api';
 
 class ClipboardAPI {
     async request(endpoint, options = {}) {

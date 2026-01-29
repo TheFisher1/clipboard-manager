@@ -53,7 +53,22 @@ if (strpos($path, '/admin/') === 0 || strpos($path, '/admin') === 0) {
     // Handle /admin or /admin/ -> redirect to /admin/dashboard.php
     if ($path === '/admin' || $path === '/admin/') {
         if (file_exists(__DIR__ . '/admin/dashboard.php')) {
+            // Capture output
+            ob_start();
             require_once __DIR__ . '/admin/dashboard.php';
+            $content = ob_get_clean();
+            
+            // Inject base path and fix paths if it's HTML
+            if (stripos($content, '<html') !== false) {
+                $basePathScript = '<script>window.APP_BASE_PATH = "' . htmlspecialchars($baseDir) . '";</script>';
+                $content = preg_replace('/(<head[^>]*>)/i', '$1' . $basePathScript, $content, 1);
+                
+                if ($baseDir && $baseDir !== '/') {
+                    $content = preg_replace('/(href|src)="\/(?!\/|http)/', '$1="' . $baseDir . '/', $content);
+                }
+            }
+            
+            echo $content;
             exit;
         }
     }
@@ -65,7 +80,22 @@ if (strpos($path, '/admin/') === 0 || strpos($path, '/admin') === 0) {
         $ext = pathinfo($adminFile, PATHINFO_EXTENSION);
         
         if ($ext === 'php') {
+            // Capture output
+            ob_start();
             require_once $adminFile;
+            $content = ob_get_clean();
+            
+            // Inject base path and fix paths if it's HTML
+            if (stripos($content, '<html') !== false) {
+                $basePathScript = '<script>window.APP_BASE_PATH = "' . htmlspecialchars($baseDir) . '";</script>';
+                $content = preg_replace('/(<head[^>]*>)/i', '$1' . $basePathScript, $content, 1);
+                
+                if ($baseDir && $baseDir !== '/') {
+                    $content = preg_replace('/(href|src)="\/(?!\/|http)/', '$1="' . $baseDir . '/', $content);
+                }
+            }
+            
+            echo $content;
             exit;
         }
         
@@ -78,12 +108,27 @@ if (strpos($path, '/admin/') === 0 || strpos($path, '/admin') === 0) {
 // ============================================
 // ROUTE: Special PHP Files in Root
 // ============================================
-$specialFiles = ['install.php', 'check_config.php', 'debug.php', 'test_routing.php'];
+$specialFiles = ['install.php', 'check_config.php', 'debug.php', 'test_routing.php', 'test_css.php'];
 foreach ($specialFiles as $file) {
     if ($path === '/' . $file) {
         $filePath = __DIR__ . '/' . $file;
         if (file_exists($filePath)) {
+            // Capture output
+            ob_start();
             require_once $filePath;
+            $content = ob_get_clean();
+            
+            // Inject base path and fix paths if it's HTML
+            if (stripos($content, '<html') !== false) {
+                $basePathScript = '<script>window.APP_BASE_PATH = "' . htmlspecialchars($baseDir) . '";</script>';
+                $content = preg_replace('/(<head[^>]*>)/i', '$1' . $basePathScript, $content, 1);
+                
+                if ($baseDir && $baseDir !== '/') {
+                    $content = preg_replace('/(href|src)="\/(?!\/|http)/', '$1="' . $baseDir . '/', $content);
+                }
+            }
+            
+            echo $content;
             exit;
         }
     }
@@ -96,6 +141,25 @@ foreach ($specialFiles as $file) {
 // For paths starting with /public/, serve directly from that folder
 if (strpos($path, '/public/') === 0) {
     $filePath = __DIR__ . $path;
+    
+    // If it's an HTML file, inject base path
+    if (file_exists($filePath) && is_file($filePath) && pathinfo($filePath, PATHINFO_EXTENSION) === 'html') {
+        $content = file_get_contents($filePath);
+        
+        // Inject base path script at the beginning of head
+        $basePathScript = '<script>window.APP_BASE_PATH = "' . htmlspecialchars($baseDir) . '";</script>';
+        $content = preg_replace('/(<head[^>]*>)/i', '$1' . $basePathScript, $content, 1);
+        
+        // Replace absolute paths with base path
+        if ($baseDir && $baseDir !== '/') {
+            $content = preg_replace('/(href|src)="\/(?!\/|http)/', '$1="' . $baseDir . '/', $content);
+        }
+        
+        header('Content-Type: text/html; charset=utf-8');
+        header('Content-Length: ' . strlen($content));
+        echo $content;
+        exit;
+    }
     
     if (file_exists($filePath) && is_file($filePath)) {
         serveStaticFile($filePath);
@@ -110,7 +174,20 @@ $publicPath = __DIR__ . '/public';
 if ($path === '/' || $path === '') {
     $filePath = $publicPath . '/index.html';
     if (file_exists($filePath)) {
-        serveStaticFile($filePath);
+        $content = file_get_contents($filePath);
+        
+        // Inject base path script at the beginning of head
+        $basePathScript = '<script>window.APP_BASE_PATH = "' . htmlspecialchars($baseDir) . '";</script>';
+        $content = preg_replace('/(<head[^>]*>)/i', '$1' . $basePathScript, $content, 1);
+        
+        // Replace absolute paths with base path
+        if ($baseDir && $baseDir !== '/') {
+            $content = preg_replace('/(href|src)="\/(?!\/|http)/', '$1="' . $baseDir . '/', $content);
+        }
+        
+        header('Content-Type: text/html; charset=utf-8');
+        header('Content-Length: ' . strlen($content));
+        echo $content;
         exit;
     }
 }

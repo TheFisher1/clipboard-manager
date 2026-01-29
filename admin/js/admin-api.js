@@ -1,8 +1,7 @@
 class AdminAPI {
     constructor() {
-        // Use BASE_PATH if available, otherwise default to /api/admin
-        const basePath = window.BASE_PATH || '';
-        this.baseURL = basePath + '/api/admin';
+        // Always use absolute path from root
+        this.baseURL = '/api/admin';
     }
 
     async request(endpoint, options = {}) {

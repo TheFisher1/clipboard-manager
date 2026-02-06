@@ -1,27 +1,18 @@
-<?php require_once __DIR__ . "/auth_check.php"; ?>
+<?php 
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . "/auth_check.php"; 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Admin Panel</title>
-    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="<?= BASE_PATH ?>/admin/css/admin.css">
 </head>
 <body>
     <div class="admin-container">
-        <nav class="admin-sidebar">
-            <div class="sidebar-header">
-                <h2>Admin Panel</h2>
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="/admin/dashboard.php">Dashboard</a></li>
-                <li><a href="/admin/users.php" class="active">Users</a></li>
-                <li><a href="/admin/clipboards.php">Clipboards</a></li>
-                <li><a href="/admin/content.php">Content</a></li>
-                <li><a href="/admin/activity.php">Activity Logs</a></li>
-                <li><a href="/public/dashboard.html">Back to App</a></li>
-            </ul>
-        </nav>
+        <?php include __DIR__ . '/nav.php'; ?>
 
         <main class="admin-main">
             <header class="admin-header">
@@ -36,21 +27,28 @@
                 <div class="filters">
                     <div class="filters-row">
                         <div class="filter-item">
+                            <label for="search">Search</label>
                             <input type="text" id="search" placeholder="Search by name or email..." onkeyup="handleSearch()">
                         </div>
                         <div class="filter-item">
+                            <label for="filter-admin">User Type</label>
                             <select id="filter-admin" onchange="loadUsers()">
                                 <option value="">All Users</option>
-                                <option value="1">Admins Only</option>
-                                <option value="0">Non-Admins</option>
+                                <option value="1">Administrators</option>
+                                <option value="0">Regular Users</option>
                             </select>
                         </div>
                         <div class="filter-item">
+                            <label for="filter-verified">Email Status</label>
                             <select id="filter-verified" onchange="loadUsers()">
-                                <option value="">All Verification Status</option>
-                                <option value="1">Verified</option>
-                                <option value="0">Unverified</option>
+                                <option value="">All Statuses</option>
+                                <option value="1">Verified ✓</option>
+                                <option value="0">Not Verified</option>
                             </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
                         </div>
                     </div>
                 </div>
@@ -164,7 +162,8 @@
         </div>
     </div>
 
-    <script src="/admin/js/admin-api.js"></script>
-    <script src="/admin/js/admin-users.js"></script>
+    <script>const BASE_PATH = '<?= BASE_PATH ?>';</script>
+    <script src="<?= BASE_PATH ?>/admin/js/admin-api.js"></script>
+    <script src="<?= BASE_PATH ?>/admin/js/admin-users.js"></script>
 </body>
 </html>

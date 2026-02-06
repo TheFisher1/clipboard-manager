@@ -18,6 +18,14 @@ function handleSearch() {
     }, 500);
 }
 
+function clearFilters() {
+    document.getElementById('search').value = '';
+    document.getElementById('filter-admin').value = '';
+    document.getElementById('filter-verified').value = '';
+    currentPage = 1;
+    loadUsers();
+}
+
 async function loadUsers() {
     const search = document.getElementById('search').value;
     const isAdmin = document.getElementById('filter-admin').value;

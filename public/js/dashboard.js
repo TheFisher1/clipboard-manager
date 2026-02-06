@@ -142,7 +142,7 @@ createClipboardForm.addEventListener('submit', async (e) => {
     const data = {
         name: formData.get('name'),
         description: formData.get('description') || null,
-        is_public: formData.get('is_public') === 'on',
+        is_public: formData.get('is_public') === 'on' ? true : false,
         owner_id: currentUser.id,
         max_subscribers: maxSubscribers ? parseInt(maxSubscribers) : null,
         max_items: maxItems ? parseInt(maxItems) : null,
@@ -338,6 +338,9 @@ createItemForm.addEventListener('submit', async (e) => {
 
 itemTypeSelect.addEventListener('change', () => {
     const type = itemTypeSelect.value;
+    // Clear existing content first
+    itemTypeFields.innerHTML = '';
+    // Then add new fields
     itemTypeFields.innerHTML = getTypeFields(type);
 });
 

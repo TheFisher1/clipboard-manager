@@ -1,6 +1,15 @@
 class AdminAPI {
     constructor() {
-        this.baseURL = '/api/admin';
+        // Use BASE_PATH if defined (from PHP), otherwise detect from current location
+        const basePath = typeof BASE_PATH !== 'undefined' ? BASE_PATH : this.detectBasePath();
+        this.baseURL = `${basePath}/api/admin`;
+    }
+
+    detectBasePath() {
+        const path = window.location.pathname;
+        // If we're in /some_folder/admin/..., extract /some_folder
+        const match = path.match(/^(\/[^\/]+)\/admin\//);
+        return match ? match[1] : '';
     }
 
     async request(endpoint, options = {}) {
@@ -210,8 +219,9 @@ function showError(element, message) {
 }
 
 function logout() {
-    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    const basePath = typeof BASE_PATH !== 'undefined' ? BASE_PATH : '';
+    fetch(`${basePath}/api/auth/logout`, { method: 'POST', credentials: 'include' })
         .then(() => {
-            window.location.href = '/public/login.html';
+            window.location.href = `${basePath}/public/login.html`;
         });
 }

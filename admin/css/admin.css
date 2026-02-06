@@ -217,7 +217,7 @@ body {
 
 .data-table th,
 .data-table td {
-    padding: 12px 15px;
+    padding: 15px;
     text-align: left;
     border-bottom: 1px solid #ecf0f1;
 }
@@ -226,6 +226,9 @@ body {
     background: #34495e;
     color: white;
     font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .data-table th.sortable {
@@ -245,8 +248,22 @@ body {
     color: #3498db;
 }
 
-.data-table tr:hover {
+.data-table tbody tr {
+    transition: background 0.2s;
+}
+
+.data-table tbody tr:nth-child(even) {
     background: #f8f9fa;
+}
+
+.data-table tbody tr:hover {
+    background: #e8f4f8;
+    transform: scale(1.01);
+}
+
+.data-table td {
+    font-size: 0.95rem;
+    color: #2c3e50;
 }
 
 .data-table td button {
@@ -255,14 +272,63 @@ body {
     font-size: 0.85rem;
 }
 
+/* Status badges */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-admin {
+    background: #e7d4f5;
+    color: #6f42c1;
+}
+
 /* Buttons */
 .btn {
-    padding: 8px 16px;
+    padding: 10px 18px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: background 0.3s;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
 }
 
 .btn-primary {
@@ -272,6 +338,15 @@ body {
 
 .btn-primary:hover {
     background: #2980b9;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
 }
 
 .btn-danger {
@@ -290,6 +365,25 @@ body {
 
 .btn-success:hover {
     background: #229954;
+}
+
+.btn-warning {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #e67e22;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.btn-icon {
+    padding: 6px 10px;
+    font-size: 1rem;
 }
 
 /* Modals */
@@ -401,7 +495,7 @@ body {
 /* Filters */
 .filters {
     background: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 8px;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -411,11 +505,37 @@ body {
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
+    align-items: flex-end;
 }
 
 .filter-item {
     flex: 1;
     min-width: 200px;
+}
+
+.filter-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.filter-item input,
+.filter-item select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.filter-item input:focus,
+.filter-item select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 /* Pagination */

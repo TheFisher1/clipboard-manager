@@ -158,7 +158,7 @@ class Clipboard
             'name' => $this->name,
             'description' => $this->description,
             'owner_id' => $this->ownerId,
-            'is_public' => $this->isPublic,
+            'is_public' => $this->isPublic ? 1 : 0,
             'max_subscribers' => $this->maxSubscribers,
             'max_items' => $this->maxItems,
             'allowed_content_types' => $this->allowedContentTypes !== null

@@ -34,7 +34,11 @@ if (!AuthMiddleware::checkAdmin()) {
 }
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = str_replace('/api/admin', '', $path);
+// Remove everything before /api/admin/ and the /api/admin itself
+// e.g., /clipboard_manager/api/admin/users -> /users
+if (preg_match('#^(.*?)/api/admin(/.*)?$#', $path, $matches)) {
+    $path = $matches[2] ?? '/';
+}
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
@@ -138,6 +142,21 @@ try {
         require_once __DIR__ . '/../../src/Controllers/Api/Admin/AdminActivityController.php';
         $controller = new AdminActivityController();
         $controller->handleRequest($method, 'audit');
+        exit;
+    }
+
+    // SETTINGS ROUTES
+    if (preg_match('#^/settings$#', $path)) {
+        require_once __DIR__ . '/../../src/Controllers/Api/Admin/AdminSettingsController.php';
+        $controller = new AdminSettingsController();
+        $controller->handleRequest($method, null);
+        exit;
+    }
+
+    if (preg_match('#^/settings/([^/]+)$#', $path, $matches)) {
+        require_once __DIR__ . '/../../src/Controllers/Api/Admin/AdminSettingsController.php';
+        $controller = new AdminSettingsController();
+        $controller->handleRequest($method, $matches[1]);
         exit;
     }
 

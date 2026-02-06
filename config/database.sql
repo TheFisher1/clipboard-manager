@@ -1,6 +1,3 @@
-CREATE DATABASE IF NOT EXISTS clipboard_system;
-USE clipboard_system;
-
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) UNIQUE NOT NULL,

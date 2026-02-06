@@ -1,11 +1,32 @@
-const API_BASE_URL = '/api';
+// Automatically detect the base path from the current location
+const getBasePath = () => {
+    const path = window.location.pathname;
+    console.log('Current pathname:', path);
+    // If we're in /some_folder/public/..., extract /some_folder
+    const match = path.match(/^(\/[^\/]+)\/public\//);
+    console.log('Regex match:', match);
+    const basePath = match ? match[1] : '';
+    console.log('Base path:', basePath);
+    return basePath;
+};
+
+const API_BASE_URL = `${getBasePath()}/api`;
+console.log('API_BASE_URL set to:', API_BASE_URL);
 
 class ClipboardAPI {
     async request(endpoint, options = {}) {
         const url = `${API_BASE_URL}${endpoint}`;
+        
+        // Don't set Content-Type for FormData - browser will set it automatically with boundary
+        const headers = {};
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+        
         const config = {
             credentials: 'same-origin',
             headers: {
+                ...headers,
                 ...options.headers
             },
             ...options
@@ -13,7 +34,17 @@ class ClipboardAPI {
 
         try {
             const response = await fetch(url, config);
-            const data = await response.json();
+            
+            // Get the response text first to handle non-JSON responses
+            const text = await response.text();
+            let data;
+            
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Failed to parse JSON response:', text);
+                throw new Error(`Server returned invalid JSON: ${text.substring(0, 100)}`);
+            }
 
             if (!response.ok) {
                 throw new Error(data.error || 'Request failed');

@@ -18,7 +18,11 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../src/Services/SessionManager.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = str_replace('/api', '', $path);
+// Remove everything before /api/ and the /api itself
+// e.g., /clipboard_manager/api/auth/login -> /auth/login
+if (preg_match('#^(.*?)/api(/.*)?$#', $path, $matches)) {
+    $path = $matches[2] ?? '/';
+}
 $method = $_SERVER['REQUEST_METHOD'];
 
 // AUTH ROUTES

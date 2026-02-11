@@ -8,15 +8,15 @@ SessionManager::initializeSession();
 
 // Check if user is authenticated and is admin
 if (!SessionManager::isAuthenticated()) {
-    header('Location: ' . BASE_PATH . '/public/login.html?redirect=/admin');
+    header('Location: ../public/login.html?redirect=/admin');
     exit;
 }
 
 if (!SessionManager::isAdmin()) {
-    header('Location: ' . BASE_PATH . '/public/dashboard.html');
+    header('Location: ../public/dashboard.html');
     exit;
 }
 
 // Redirect to dashboard
-header('Location: ' . BASE_PATH . '/admin/dashboard.php');
+header('Location: dashboard.php');
 exit;

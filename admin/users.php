@@ -8,7 +8,7 @@ require_once __DIR__ . "/auth_check.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Admin Panel</title>
-    <link rel="stylesheet" href="<?= BASE_PATH ?>/admin/css/admin.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
     <div class="admin-container">
@@ -163,7 +163,7 @@ require_once __DIR__ . "/auth_check.php";
     </div>
 
     <script>const BASE_PATH = '<?= BASE_PATH ?>';</script>
-    <script src="<?= BASE_PATH ?>/admin/js/admin-api.js"></script>
-    <script src="<?= BASE_PATH ?>/admin/js/admin-users.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-users.js"></script>
 </body>
 </html>

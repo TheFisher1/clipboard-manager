@@ -1,28 +1,18 @@
-<?php require_once __DIR__ . "/auth_check.php"; ?>
+<?php 
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . "/auth_check.php"; 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Admin Panel</title>
-    <link rel="stylesheet" href="/admin/css/admin.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
     <div class="admin-container">
-        <nav class="admin-sidebar">
-            <div class="sidebar-header">
-                <h2>Admin Panel</h2>
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="/admin/dashboard.php">Dashboard</a></li>
-                <li><a href="/admin/users.php">Users</a></li>
-                <li><a href="/admin/clipboards.php">Clipboards</a></li>
-                <li><a href="/admin/content.php">Content</a></li>
-                <li><a href="/admin/activity.php">Activity Logs</a></li>
-                <li><a href="/admin/settings.php" class="active">Settings</a></li>
-                <li><a href="/public/dashboard.html">Back to App</a></li>
-            </ul>
-        </nav>
+        <?php include __DIR__ . '/nav.php'; ?>
 
         <main class="admin-main">
             <header class="admin-header">
@@ -41,7 +31,8 @@
         </main>
     </div>
 
-    <script src="/admin/js/admin-api.js"></script>
-    <script src="/admin/js/admin-settings.js"></script>
+    <script>const BASE_PATH = '<?= BASE_PATH ?>';</script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-settings.js"></script>
 </body>
 </html>

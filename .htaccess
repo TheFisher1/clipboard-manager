@@ -1,17 +1,22 @@
 RewriteEngine On
 
+# Security: Block direct access to sensitive directories
+RewriteRule ^config/ - [F,L]
+RewriteRule ^docker/ - [F,L]
+RewriteRule ^src/ - [F,L]
+
 # Admin API routes
 RewriteRule ^api/admin/(.*)$ api/admin/index.php [L,QSA]
 
 # Regular API routes
 RewriteRule ^api/(.*)$ api/index.php [L,QSA]
 
+# Skip rewriting for admin directory (served directly by Apache)
+RewriteRule ^admin(/.*)?$ - [L]
+
+# Front controller: route everything else through index.php (which serves from public/)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L,QSA]
-
-RewriteRule ^config/ - [F,L]
-RewriteRule ^docker/ - [F,L]
-RewriteRule ^src/ - [F,L]
 
 Options -Indexes

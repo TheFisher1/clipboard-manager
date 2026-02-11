@@ -21,8 +21,12 @@ const getAppBasePath = () => {
         const user = response.user;
 
         // User is logged in
+        const adminBtn = user.is_admin
+            ? `<a href="../admin/dashboard.php" class="btn btn-sm btn-primary">Admin</a>`
+            : '';
         navAuth.innerHTML = `
             <span class="user-name">Welcome, ${escapeHtml(user.name)}</span>
+            ${adminBtn}
             <a href="dashboard.html" class="btn btn-sm btn-primary">Dashboard</a>
             <a id="navLogoutBtn" class="btn btn-sm btn-secondary">Logout</a>
         `;

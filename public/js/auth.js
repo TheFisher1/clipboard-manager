@@ -4,8 +4,16 @@ let currentUser = null;
 // Get base path for the application
 const getAppBasePath = () => {
     const path = window.location.pathname;
-    const match = path.match(/^(\/[^\/]+)\/public\//);
-    return match ? match[1] + '/public' : '';
+
+    const split = path.split("/");
+    console.log(split);
+    const i = split.findIndex((a) => a === 'public');
+    const sliced = split.slice(0, i);
+    const joined = sliced.join('/');
+    console.log(joined);
+    return joined + '/public';
+    // const match = path.match(/^(\/[^\/]+)\/public\//);
+    // return match ? match[1] + '/public' : '';
 };
 
 // Check if user is logged in
@@ -36,7 +44,7 @@ function updateAuthUI() {
     if (!authLinks) return;
     
     const basePath = getAppBasePath();
-    
+    console.log(basePath); 
     if (currentUser) {
         authLinks.innerHTML = `
             <span>Welcome, ${escapeHtml(currentUser.name)}</span>

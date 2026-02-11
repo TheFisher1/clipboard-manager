@@ -1,58 +1,68 @@
 // Automatically detect the base path from the current location
 const getBasePath = () => {
     const path = window.location.pathname;
-    console.log('Current pathname:', path);
+    console.log("Current pathname:", path);
     // If we're in /some_folder/public/..., extract /some_folder
-    const match = path.match(/^(\/[^\/]+)\/public\//);
-    console.log('Regex match:', match);
-    const basePath = match ? match[1] : '';
-    console.log('Base path:', basePath);
-    return basePath;
+    // const match = path.match(/^(\/[^\/]+)\/public\//);
+    // const match = path.match(/^(\/.+?)\/public\//);
+    const split = path.split("/");
+    console.log(split);
+    const i = split.findIndex((a) => a === 'public');
+    const sliced = split.slice(0, i);
+    const joined = sliced.join('/');
+    console.log(joined);
+    return joined;
+    // console.log('Regex match:', match);
+    // const basePath = match ? match[1] : "";
+    // console.log("Base path:", basePath);
+    // return basePath;
 };
 
 const API_BASE_URL = `${getBasePath()}/api`;
-console.log('API_BASE_URL set to:', API_BASE_URL);
+// console.log('API_BASE_URL set to:', API_BASE_URL);
 
 class ClipboardAPI {
     async request(endpoint, options = {}) {
         const url = `${API_BASE_URL}${endpoint}`;
-        
+
         // Don't set Content-Type for FormData - browser will set it automatically with boundary
         const headers = {};
         if (!(options.body instanceof FormData)) {
-            headers['Content-Type'] = 'application/json';
+            headers["Content-Type"] = "application/json";
         }
-        
+
         const config = {
-            credentials: 'same-origin',
+            credentials: "same-origin",
             headers: {
                 ...headers,
-                ...options.headers
+                ...options.headers,
             },
-            ...options
+            ...options,
         };
 
         try {
             const response = await fetch(url, config);
-            
+
             // Get the response text first to handle non-JSON responses
             const text = await response.text();
             let data;
-            
+
             try {
                 data = JSON.parse(text);
             } catch (e) {
-                console.error('Failed to parse JSON response:', text);
-                throw new Error(`Server returned invalid JSON: ${text.substring(0, 100)}`);
+                console.error("Failed to parse JSON response:", text);
+                throw new Error(
+                    `Server returned invalid JSON: ${text.substring(0, 100)}`,
+                );
             }
 
             if (!response.ok) {
-                throw new Error(data.error || 'Request failed');
+                throw new Error(data.error || "Request failed");
             }
 
             return data;
         } catch (error) {
-            console.error('API Error:', error);
+            console.error("API Error:", error);
             throw error;
         }
     }
@@ -60,8 +70,8 @@ class ClipboardAPI {
     async requestBlob(endpoint, options = {}) {
         const url = `${API_BASE_URL}${endpoint}`;
         const config = {
-            credentials: 'include',
-            ...options
+            credentials: "include",
+            ...options,
         };
 
         try {
@@ -73,33 +83,33 @@ class ClipboardAPI {
 
             return await response.blob();
         } catch (error) {
-            console.error('API Error:', error);
+            console.error("API Error:", error);
             throw error;
         }
     }
 
     async login(credentials) {
-        return this.request('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify(credentials)
+        return this.request("/auth/login", {
+            method: "POST",
+            body: JSON.stringify(credentials),
         });
     }
 
     async register(userData) {
-        return this.request('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(userData)
+        return this.request("/auth/register", {
+            method: "POST",
+            body: JSON.stringify(userData),
         });
     }
 
     async logout() {
-        return this.request('/auth/logout', {
-            method: 'POST'
+        return this.request("/auth/logout", {
+            method: "POST",
         });
     }
 
     async getCurrentUser() {
-        return this.request('/auth/me');
+        return this.request("/auth/me");
     }
 
     async getUserById(id) {
@@ -107,11 +117,11 @@ class ClipboardAPI {
     }
 
     async getClipboards() {
-        return this.request('/clipboards');
+        return this.request("/clipboards");
     }
 
     async getMyClipboards() {
-        return this.request('/clipboards/mine');
+        return this.request("/clipboards/mine");
     }
 
     async searchClipboards(keywordString) {
@@ -123,22 +133,22 @@ class ClipboardAPI {
     }
 
     async createClipboard(data) {
-        return this.request('/clipboards', {
-            method: 'POST',
-            body: JSON.stringify(data)
+        return this.request("/clipboards", {
+            method: "POST",
+            body: JSON.stringify(data),
         });
     }
 
     async updateClipboard(id, data) {
         return this.request(`/clipboards/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
+            method: "PUT",
+            body: JSON.stringify(data),
         });
     }
 
     async deleteClipboard(id) {
         return this.request(`/clipboards/${id}`, {
-            method: 'DELETE'
+            method: "DELETE",
         });
     }
 
@@ -152,39 +162,38 @@ class ClipboardAPI {
 
     async createItem(clipboardId, data) {
         return this.request(`/clipboards/${clipboardId}/items`, {
-            method: 'POST',
-            body: JSON.stringify(data)
+            method: "POST",
+            body: JSON.stringify(data),
         });
     }
 
     async updateItem(clipboardId, itemId, data) {
         return this.request(`/clipboards/${clipboardId}/items/${itemId}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
+            method: "PUT",
+            body: JSON.stringify(data),
         });
     }
 
     async deleteItem(itemId) {
         return this.request(`/items/${itemId}`, {
-            method: 'DELETE'
+            method: "DELETE",
         });
     }
 
     async createItemFile(clipboardId, data) {
         return this.request(`/clipboards/${clipboardId}/items/file`, {
-            method: 'POST',
+            method: "POST",
             body: data,
         });
     }
 
-    async getItemBlob(itemId, endpoint = 'view') {
-        const res = await fetch(
-            `${API_BASE_URL}items/${itemId}/${endpoint}`,
-            { credentials: 'include' }
-        );
+    async getItemBlob(itemId, endpoint = "view") {
+        const res = await fetch(`${API_BASE_URL}items/${itemId}/${endpoint}`, {
+            credentials: "include",
+        });
 
         if (!res.ok) {
-            throw new Error('Failed to fetch file');
+            throw new Error("Failed to fetch file");
         }
 
         return await res.blob();
@@ -194,14 +203,14 @@ class ClipboardAPI {
         const blob = await this.requestBlob(`/items/${itemId}/view`);
         const url = URL.createObjectURL(blob);
 
-        window.open(url, '_blank');
+        window.open(url, "_blank");
     }
 
     async downloadItemFile(itemId) {
         const blob = await this.requestBlob(`/items/${itemId}/download`);
         const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
+
+        const a = document.createElement("a");
         a.href = url;
         a.download = filename;
         a.click();

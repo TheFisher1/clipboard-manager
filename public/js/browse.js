@@ -1,3 +1,16 @@
+const getAppBasePath = () => {
+    const path = window.location.pathname;
+
+    const split = path.split("/");
+    console.log(split);
+    const i = split.findIndex((a) => a === "public");
+    const sliced = split.slice(0, i);
+    const joined = sliced.join("/");
+    console.log(joined);
+    return joined + "/public";
+    // const match = path.match(/^(\/[^\/]+)\/public\//);
+    // return match ? match[1] + '/public' : '';
+};
 // Check authentication on page load
 (async function() {
     try {
@@ -7,7 +20,8 @@
     } catch (error) {
         console.log(error);
         // Not authenticated, redirect to login
-        window.location.href = '/login.html';
+        // window.location.href = '/login.html';
+        window.location.href = `${getAppBasePath()}/login.html`;
     }
 })();
 

@@ -238,11 +238,14 @@ function showError(element, message) {
 }
 
 function logout() {
-    const basePath = typeof BASE_PATH !== "undefined" ? BASE_PATH : "";
+    const path = window.location.pathname;
+    const split = path.split("/");
+    const i = split.findIndex((a) => a === "admin");
+    const basePath = split.slice(0, i).join("/");
     fetch(`${basePath}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
     }).then(() => {
-        window.location.href = `${basePath}/public/login.html`;
+        window.location.href = `${basePath}/public/`;
     });
 }

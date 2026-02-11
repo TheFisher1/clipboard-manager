@@ -200,10 +200,20 @@
     margin-top: 30px;
     padding-top: 20px;
     border-top: 1px solid #eee;
+    position: relative;
 }
 
 .items-section h3 {
     color: var(--btn-primary-color);
+    display: inline-block;
+}
+
+#shareClipboardBtn {
+    position: absolute;
+    right: 0;
+    top: 20px;
+    font-size: 0.7rem;
+    padding: 0.3em 0.6em;
 }
 
 .items-list {
@@ -240,6 +250,18 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+}
+
+.item-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.item-actions .btn {
+    padding: 0.4em 0.8em;
+    font-size: 0.75rem;
+    margin: 0;
 }
 
 .type-badge {
@@ -381,4 +403,24 @@
     background: var(--trash-svg);
     background-size: contain;
     background-repeat: no-repeat;
+}
+
+.btn-share {
+    background: var(--clipboard-svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-left: 10px;
+    transition: background-color 0.3s;
+}
+
+.btn-share:hover {
+    background-color: var(--btn-secondary-hover-color);
+}
+
+.btn-copy-text {
+    white-space: nowrap;
+}
+
+.btn-copy-text.copied {
+    background-color: #4CAF50 !important;
 }

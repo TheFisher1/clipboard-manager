@@ -169,9 +169,25 @@ async function showClipboardDetails(id) {
         document.getElementById('clipboardName').textContent = clipboard.name;
         document.getElementById('clipboardDescription').textContent = 
             clipboard.description || 'No description';
-        await createCollapsible(clipboard);
         
+        await createCollapsible(clipboard);
         await loadItems(id);
+        
+        // Add share button in items section (top right)
+        const itemsSection = document.querySelector('.items-section');
+        const existingShareBtn = document.getElementById('shareClipboardBtn');
+        if (existingShareBtn) {
+            existingShareBtn.remove();
+        }
+        
+        const shareBtn = document.createElement('button');
+        shareBtn.id = 'shareClipboardBtn';
+        shareBtn.className = 'btn btn-sm btn-secondary';
+        shareBtn.textContent = '🔗 Share';
+        shareBtn.title = 'Copy share link';
+        shareBtn.onclick = () => shareClipboard(id);
+        
+        itemsSection.insertBefore(shareBtn, itemsSection.firstChild);
         
         detailsModal.style.display = 'block';
     } catch (error) {
@@ -268,7 +284,11 @@ async function loadItems(clipboardId) {
             <div class="item-card ${item.content_type}-card" data-id="${item.id}">
                 <div class="item-header">
                     <h4>${escapeHtml(item.title || 'Untitled')}</h4>
-                    <button class="btn-icon btn-delete" onclick="deleteItemHandler(${clipboardId}, ${item.id})">️</button>
+                    <div class="item-actions">
+                        ${(item.content_type === 'text' || item.content_type === 'code') ? 
+                            `<button class="btn btn-sm btn-secondary btn-copy-text" data-content="${escapeHtml(item.content_text || '')}" onclick="copyToClipboard(event)" title="Copy to clipboard">Copy</button>` : ''}
+                        <button class="btn-icon btn-delete" onclick="deleteItemHandler(${clipboardId}, ${item.id})" title="Delete item"></button>
+                    </div>
                 </div>
 
                 <div class="item-subheader">
@@ -483,5 +503,118 @@ async function deleteItemHandler(clipboardId, itemId) {
 
     } catch (error) {
         alert('Failed to delete item: ' + error.message);
+    }
+}
+
+function shareClipboard(clipboardId) {
+    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+    const shareUrl = `${baseUrl}/view.html?id=${clipboardId}`;
+    
+    const button = document.getElementById('shareClipboardBtn');
+    
+    // Try to copy to clipboard
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showShareFeedback(button, true);
+        }).catch(() => {
+            fallbackShareClipboard(shareUrl, button);
+        });
+    } else {
+        fallbackShareClipboard(shareUrl, button);
+    }
+}
+
+function fallbackShareClipboard(url, button) {
+    const textArea = document.createElement('textarea');
+    textArea.value = url;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showShareFeedback(button, true);
+    } catch (err) {
+        showShareFeedback(button, false);
+    }
+    
+    textArea.remove();
+}
+
+function showShareFeedback(button, success) {
+    const originalBg = button.style.backgroundColor;
+    
+    if (success) {
+        button.style.backgroundColor = '#4CAF50';
+        button.title = 'Link copied!';
+    } else {
+        button.style.backgroundColor = '#f44336';
+        button.title = 'Copy failed';
+    }
+    
+    setTimeout(() => {
+        button.style.backgroundColor = originalBg;
+        button.title = 'Copy share link';
+    }, 2000);
+}
+
+async function copyToClipboard(event) {
+    try {
+        const button = event.target;
+        const text = button.getAttribute('data-content');
+        
+        if (!text) {
+            alert('No content to copy');
+            return;
+        }
+
+        // Try modern Clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (clipboardError) {
+                // Fallback to older method
+                fallbackCopyToClipboard(text);
+            }
+        } else {
+            // Fallback for older browsers
+            fallbackCopyToClipboard(text);
+        }
+        
+        // Visual feedback
+        const originalText = button.textContent;
+        const originalBg = button.style.backgroundColor;
+        
+        button.textContent = 'Copied!';
+        button.style.backgroundColor = '#4CAF50';
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.backgroundColor = originalBg;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Copy failed:', error);
+        alert('Failed to copy: ' + error.message);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        textArea.remove();
+    } catch (err) {
+        textArea.remove();
+        throw new Error('Fallback copy failed');
     }
 }

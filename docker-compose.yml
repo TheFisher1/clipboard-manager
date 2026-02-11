@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
       - .:/var/www/html
       - ./uploads:/var/www/html/uploads
@@ -19,10 +19,11 @@ services:
       - DB_PASS=rootpassword
     networks:
       - clipboard-network
+    restart: unless-stopped
 
   db:
     image: mysql:8.0
-    platform: linux/arm64
+    platform: linux/amd64
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: clipboard_system
@@ -33,6 +34,7 @@ services:
       - ./config/database.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - clipboard-network
+    restart: unless-stopped
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -46,6 +48,7 @@ services:
       - db
     networks:
       - clipboard-network
+    restart: unless-stopped
 
 volumes:
   mysql_data:
